@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Order;
+use App\Models\ProductVariant;
 use App\Models\Voucher;
 use App\Services\OrderService;
 use App\Services\PayMongoService;
@@ -15,15 +16,65 @@ use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 class CheckoutController extends Controller
 {
+    public function buyNow(Request $request): RedirectResponse
+    {
+        $data = $request->validate([
+            'product_variant_id' => ['required', 'exists:product_variants,id'],
+            'quantity' => ['required', 'integer', 'min:1'],
+        ]);
+
+        $variant = ProductVariant::with('product.team')->findOrFail($data['product_variant_id']);
+
+        if (!$variant->hasStockFor($data['quantity'])) {
+            return back()->withErrors(['quantity' => 'Not enough stock available.']);
+        }
+
+        session()->put('direct_buy', [
+            'product_variant_id' => (int) $variant->id,
+            'quantity' => (int) $data['quantity'],
+        ]);
+
+        return redirect()->route('checkout.index', ['buy_now' => 1]);
+    }
+
     public function index(Request $request): Response
     {
-        $cart = $request->user()->cart()->firstOrCreate([]);
-
         $pm = app(PayMongoService::class);
+
+        if ($request->boolean('buy_now') && session()->has('direct_buy')) {
+            $directData = session('direct_buy');
+            $variant = ProductVariant::with(['product.team', 'product.images', 'optionValues'])->find($directData['product_variant_id']);
+
+            if ($variant && $variant->hasStockFor($directData['quantity'])) {
+                $team = $variant->product->team;
+                $directItem = [
+                    'id' => 'direct_' . $variant->id,
+                    'cart_id' => null,
+                    'product_variant_id' => $variant->id,
+                    'quantity' => $directData['quantity'],
+                    'applied_voucher_id' => null,
+                    'variant' => $variant,
+                ];
+
+                return Inertia::render('Checkout/Index', [
+                    'itemsByShop' => [
+                        $team->id => [$directItem],
+                    ],
+                    'addresses' => $request->user()->addresses,
+                    'isDirectBuy' => true,
+                    'paymongoTestMode' => $pm->isTestMode(),
+                    'paymongoConfigured' => $pm->isConfigured(),
+                    'paymongoError' => $pm->configurationError(),
+                ]);
+            }
+        }
+
+        $cart = $request->user()->cart()->firstOrCreate([]);
 
         return Inertia::render('Checkout/Index', [
             'itemsByShop' => $cart->itemsGroupedByShop(),
             'addresses' => $request->user()->addresses,
+            'isDirectBuy' => false,
             'paymongoTestMode' => $pm->isTestMode(),
             'paymongoConfigured' => $pm->isConfigured(),
             'paymongoError' => $pm->configurationError(),
@@ -43,6 +94,7 @@ class CheckoutController extends Controller
             'payment_method' => ['nullable', 'string', 'in:card,gcash,paymaya,grab_pay,qrph'],
         ]);
 
+        $isDirectBuy = session()->has('direct_buy');
         $cart = $request->user()->cart;
 
         if (isset($data['latitude'], $data['longitude'])) {
@@ -63,12 +115,25 @@ class CheckoutController extends Controller
         }
 
         try {
-            $order = $orderService->placeOrder(
-                $request->user(),
-                $cart,
-                $data['address_id'],
-                $platformVoucher
-            );
+            if ($isDirectBuy) {
+                $directData = session('direct_buy');
+                $variant = ProductVariant::with('product.team')->findOrFail($directData['product_variant_id']);
+                $order = $orderService->placeDirectOrder(
+                    $request->user(),
+                    $variant,
+                    $directData['quantity'],
+                    $data['address_id'],
+                    $platformVoucher
+                );
+                session()->forget('direct_buy');
+            } else {
+                $order = $orderService->placeOrder(
+                    $request->user(),
+                    $cart,
+                    $data['address_id'],
+                    $platformVoucher
+                );
+            }
         } catch (\RuntimeException $e) {
             return back()->withErrors(['checkout' => $e->getMessage()]);
         }

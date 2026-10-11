@@ -7,6 +7,7 @@ import { ref, computed } from 'vue';
 const props = defineProps({
     itemsByShop: Object,
     addresses: Array,
+    isDirectBuy: { type: Boolean, default: false },
     paymongoTestMode: { type: Boolean, default: true },
     paymongoConfigured: { type: Boolean, default: false },
     paymongoError: { type: String, default: null },
@@ -81,6 +82,15 @@ const submit = () => {
 
         <div class="max-w-3xl mx-auto px-4 sm:px-6 py-10">
             <h1 class="text-xl font-semibold text-[#101114] mb-6">Checkout</h1>
+
+            <div v-if="isDirectBuy" class="mb-6 p-4 rounded-xl bg-purple-50 border border-purple-200 text-xs text-[#6D5EF8] flex items-center gap-3 shadow-2xs">
+                <svg class="w-5 h-5 shrink-0 text-[#6D5EF8]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+                <div>
+                    <span class="font-bold">Direct Buy Now:</span> Ang pagbiling ito ay direct checkout — hindi ginagalaw o binabago ang mga items sa iyong regular shopping cart.
+                </div>
+            </div>
 
             <!-- Address -->
             <div class="mb-6 p-4 border border-[#E4E4E0] rounded-xl bg-white">

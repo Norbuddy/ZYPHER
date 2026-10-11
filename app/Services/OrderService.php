@@ -8,6 +8,7 @@ use App\Models\Cart;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\OrderShop;
+use App\Models\ProductVariant;
 use App\Models\User;
 use App\Models\Voucher;
 use Illuminate\Support\Facades\DB;
@@ -108,6 +109,72 @@ class OrderService
 
             // Clear the cart now that the order has been created.
             $cart->items()->delete();
+
+            return $order->fresh('orderShops.items');
+        });
+    }
+
+    /**
+     * Direct purchase checkout: reserves stock and creates Order without touching the customer's permanent cart.
+     */
+    public function placeDirectOrder(User $user, ProductVariant $variant, int $quantity, ?int $addressId, ?Voucher $platformVoucher = null): Order
+    {
+        return DB::transaction(function () use ($user, $variant, $quantity, $addressId, $platformVoucher) {
+            if ($quantity < 1) {
+                throw new \RuntimeException('Invalid quantity.');
+            }
+
+            // Reserve stock for the direct purchase
+            $this->inventory->reserve($variant->id, $quantity);
+
+            $order = Order::create([
+                'order_number' => Order::generateOrderNumber(),
+                'user_id' => $user->id,
+                'address_id' => $addressId,
+                'total_amount' => 0,
+                'platform_voucher_id' => $platformVoucher?->id,
+                'payment_status' => PaymentStatus::PendingPayment,
+            ]);
+
+            $team = $variant->product->team;
+            $lineTotal = (float) $variant->price * $quantity;
+            $rate = $this->commission->rateFor($team);
+            $calc = $this->commission->calculate($lineTotal, $rate);
+
+            $orderShop = OrderShop::create([
+                'order_id' => $order->id,
+                'team_id' => $team->id,
+                'status' => OrderShopStatus::PendingPayment,
+                'subtotal' => $lineTotal,
+                'commission_rate' => $rate,
+                'platform_fee' => $calc['platform_fee'],
+                'seller_payout' => $calc['seller_payout'],
+            ]);
+
+            OrderItem::create([
+                'order_shop_id' => $orderShop->id,
+                'product_variant_id' => $variant->id,
+                'product_name' => $variant->product->name,
+                'variant_label' => $variant->label,
+                'sku' => $variant->sku,
+                'price_at_purchase' => $variant->price,
+                'quantity' => $quantity,
+                'applied_voucher_id' => null,
+            ]);
+
+            $platformDiscount = 0;
+            if ($platformVoucher) {
+                if ($voucherError = $this->vouchers->validate($platformVoucher, $user, $lineTotal)) {
+                    throw new \RuntimeException($voucherError);
+                }
+                $platformDiscount = $platformVoucher->calculateDiscount($lineTotal);
+                $this->vouchers->recordUsage($platformVoucher, $user, $platformDiscount, $order->id);
+            }
+
+            $order->update([
+                'total_amount' => max(0, $lineTotal - $platformDiscount),
+                'platform_voucher_discount' => $platformDiscount,
+            ]);
 
             return $order->fresh('orderShops.items');
         });

@@ -463,7 +463,9 @@ Route::middleware(['auth', 'verified', 'is.approved.seller', 'branch.access'])
             return back()->with('success', 'Product added to inventory.');
         })->name('inventory.manual.store');
 
-        
+        Route::post('/shop/profile', [\App\Http\Controllers\Seller\ShopProfileController::class, 'update'])
+            ->name('seller.shop.update');
+
     });
 
 // Note: "Start Selling" (team creation) uses Jetstream's default team creation route,

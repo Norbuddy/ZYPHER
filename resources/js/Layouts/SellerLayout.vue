@@ -1,6 +1,7 @@
 <script setup>
 import { ref } from 'vue';
-import { Link, usePage, router } from '@inertiajs/vue3';
+import { Link, usePage, router, useForm } from '@inertiajs/vue3';
+import DialogModal from '@/Components/DialogModal.vue';
 
 const page = usePage();
 const user = page.props.auth?.user;
@@ -11,6 +12,49 @@ const isBranchManager = ['branch_user', 'branch_manager'].includes(user?.role)
     && (user?.role === 'branch_manager' || user?.branch_role === 'manager');
 
 const dashboardOpen = ref(false);
+
+const showEditShopModal = ref(false);
+const logoPreview = ref(null);
+const logoInput = ref(null);
+
+const shopForm = useForm({
+    name: team?.name || '',
+    description: team?.description || '',
+    logo: null,
+});
+
+const openEditShopModal = () => {
+    shopForm.name = team?.name || '';
+    shopForm.description = team?.description || '';
+    shopForm.logo = null;
+    logoPreview.value = null;
+    showEditShopModal.value = true;
+};
+
+const closeEditShopModal = () => {
+    showEditShopModal.value = false;
+};
+
+const handleLogoChange = (e) => {
+    const file = e.target.files?.[0];
+    if (file) {
+        shopForm.logo = file;
+        logoPreview.value = URL.createObjectURL(file);
+    }
+};
+
+const triggerLogoInput = () => {
+    logoInput.value?.click();
+};
+
+const saveShopProfile = () => {
+    shopForm.post(route('seller.shop.update'), {
+        preserveScroll: true,
+        onSuccess: () => {
+            showEditShopModal.value = false;
+        },
+    });
+};
 
 const fullNavItems = [
     { label: 'POS', route: 'seller.pos.index', icon: 'M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z' },
@@ -101,13 +145,33 @@ const logout = () => {
                 </span>
             </div>
 
-            <!-- SHOP NAME CHIP -->
-            <div class="px-3 py-2 rounded-xl bg-white/5 border border-white/5 mb-6">
-                <p class="text-[10px] uppercase tracking-wider text-white/40 font-medium">Store</p>
-                <p class="text-xs font-semibold text-white truncate mt-0.5">
-                    {{ team?.name || 'Main Shop' }}
-                </p>
-            </div>
+            <!-- SHOP NAME CHIP (CLICKABLE TO EDIT STORE PROFILE) -->
+            <button
+                type="button"
+                @click="openEditShopModal"
+                class="w-full text-left px-3 py-2.5 rounded-xl bg-white/5 border border-white/5 mb-6 hover:bg-white/10 hover:border-white/20 transition-all group select-none"
+                title="Click to edit store profile & logo"
+            >
+                <div class="flex items-center justify-between">
+                    <p class="text-[10px] uppercase tracking-wider text-white/40 font-medium">Store</p>
+                    <span class="text-[10px] text-white/40 group-hover:text-white flex items-center gap-1 transition-colors">
+                        Edit ✎
+                    </span>
+                </div>
+                <div class="flex items-center gap-2 mt-1.5">
+                    <div class="w-6 h-6 rounded-full bg-white/20 text-white flex items-center justify-center text-[10px] font-bold overflow-hidden shrink-0">
+                        <img
+                            v-if="team?.logo_path"
+                            :src="(team.logo_path.startsWith('images/') || team.logo_path.startsWith('http') ? (team.logo_path.startsWith('http') ? team.logo_path : '/' + team.logo_path) : '/storage/' + team.logo_path)"
+                            class="w-full h-full object-cover"
+                        />
+                        <span v-else>{{ team?.name?.charAt(0) || 'S' }}</span>
+                    </div>
+                    <p class="text-xs font-semibold text-white truncate flex-1">
+                        {{ team?.name || 'Main Shop' }}
+                    </p>
+                </div>
+            </button>
 
             <!-- NAVIGATION -->
             <nav class="space-y-1 flex-1 overflow-y-auto pr-1 scrollbar-none">
@@ -255,5 +319,105 @@ const logout = () => {
                 <slot />
             </main>
         </div>
+
+        <!-- EDIT SHOP PROFILE MODAL -->
+        <DialogModal :show="showEditShopModal" @close="closeEditShopModal" max-width="lg">
+            <template #title>
+                <div class="flex items-center justify-between">
+                    <span class="text-base font-bold text-[#101114]">Edit Store Profile</span>
+                    <a
+                        v-if="team?.slug || team?.id"
+                        :href="route('shops.show', team.slug || team.id)"
+                        target="_blank"
+                        class="text-xs text-[#6D5EF8] hover:underline flex items-center gap-1 font-medium"
+                    >
+                        View Public Profile ↗
+                    </a>
+                </div>
+            </template>
+            <template #content>
+                <div class="space-y-5">
+                    <!-- Store Logo / Photo -->
+                    <div>
+                        <label class="block text-xs font-bold text-[#101114] uppercase tracking-wider mb-2">Store Profile Photo / Logo</label>
+                        <div class="flex items-center gap-4">
+                            <div class="w-16 h-16 rounded-full bg-[#101114] text-white font-bold text-xl flex items-center justify-center overflow-hidden border border-gray-200 shrink-0">
+                                <img
+                                    v-if="logoPreview"
+                                    :src="logoPreview"
+                                    class="w-full h-full object-cover"
+                                />
+                                <img
+                                    v-else-if="team?.logo_path"
+                                    :src="(team.logo_path.startsWith('images/') || team.logo_path.startsWith('http') ? (team.logo_path.startsWith('http') ? team.logo_path : '/' + team.logo_path) : '/storage/' + team.logo_path)"
+                                    class="w-full h-full object-cover"
+                                />
+                                <span v-else>{{ team?.name?.charAt(0) || 'S' }}</span>
+                            </div>
+
+                            <div>
+                                <input
+                                    ref="logoInput"
+                                    type="file"
+                                    accept="image/*"
+                                    class="hidden"
+                                    @change="handleLogoChange"
+                                />
+                                <button
+                                    type="button"
+                                    @click="triggerLogoInput"
+                                    class="px-3.5 py-2 rounded-xl border border-[#E4E4E0] hover:border-black text-xs font-semibold text-[#101114] bg-white hover:bg-[#F7F7F5] transition-colors"
+                                >
+                                    Change Store Photo
+                                </button>
+                                <p class="text-[10px] text-[#8A8B90] mt-1.5">Recommended: 400x400 square image (PNG, JPG, WebP max 3MB)</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Store Name -->
+                    <div>
+                        <label class="block text-xs font-bold text-[#101114] uppercase tracking-wider mb-1.5">Store Name</label>
+                        <input
+                            v-model="shopForm.name"
+                            type="text"
+                            required
+                            class="w-full rounded-xl border border-[#E4E4E0] p-2.5 text-xs text-[#101114] focus:border-black focus:ring-0 outline-none"
+                            placeholder="e.g. Norbuddy's Apparel"
+                        />
+                        <p v-if="shopForm.errors.name" class="text-xs text-rose-600 mt-1">{{ shopForm.errors.name }}</p>
+                    </div>
+
+                    <!-- Store Description / Tagline -->
+                    <div>
+                        <label class="block text-xs font-bold text-[#101114] uppercase tracking-wider mb-1.5">Store Tagline / Description</label>
+                        <textarea
+                            v-model="shopForm.description"
+                            rows="3"
+                            class="w-full rounded-xl border border-[#E4E4E0] p-2.5 text-xs text-[#101114] focus:border-black focus:ring-0 outline-none"
+                            placeholder="e.g. Independent streetwear and apparel shop..."
+                        ></textarea>
+                        <p v-if="shopForm.errors.description" class="text-xs text-rose-600 mt-1">{{ shopForm.errors.description }}</p>
+                    </div>
+                </div>
+            </template>
+            <template #footer>
+                <button
+                    type="button"
+                    @click="closeEditShopModal"
+                    class="rounded-xl border border-[#E4E4E0] px-4 py-2 text-xs font-medium text-[#5F5E5A] hover:bg-[#F7F7F5]"
+                >
+                    Cancel
+                </button>
+                <button
+                    type="button"
+                    @click="saveShopProfile"
+                    :disabled="shopForm.processing"
+                    class="rounded-xl bg-[#101114] px-5 py-2 text-xs font-bold text-white hover:bg-black ml-2 disabled:opacity-50"
+                >
+                    {{ shopForm.processing ? 'Saving...' : 'Save Changes' }}
+                </button>
+            </template>
+        </DialogModal>
     </div>
 </template>

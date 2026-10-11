@@ -17,7 +17,7 @@ class ProductController extends Controller
             ->with([
                 'images',
                 'team',
-                'category',
+                'category.parent',
                 'options.values',
                 'variants.optionValues',
                 'reviews.user:id,name',

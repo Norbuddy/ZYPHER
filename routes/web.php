@@ -25,6 +25,7 @@
     })->name('about');
     Route::get('/search', [SearchController::class, 'index'])->middleware('branch.seller')->name('search');
     Route::get('/search/suggestions', [SearchController::class, 'suggestions'])->middleware(['web', 'branch.seller'])->name('search.suggestions');
+    Route::get('/shop/{shopSlug}', [\App\Http\Controllers\ShopController::class, 'show'])->middleware('branch.seller')->name('shops.show');
     Route::get('/shop/{shopSlug}/{productSlug}', [ProductController::class, 'show'])->middleware('branch.seller')->name('products.show');
 
     // ---------- Become a Seller (Guest or Customer) ----------
@@ -110,6 +111,7 @@
         // ---------- Zypher: customer-facing (cart, checkout, orders, reviews) ----------
         Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
         Route::post('/cart', [CartController::class, 'store'])->name('cart.store');
+        Route::post('/buy-now', [CheckoutController::class, 'buyNow'])->name('buy-now');
         Route::patch('/cart/{cartItem}', [CartController::class, 'update'])->name('cart.update');
         Route::delete('/cart/{cartItem}', [CartController::class, 'destroy'])->name('cart.destroy');
 
