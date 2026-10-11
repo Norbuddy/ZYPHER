@@ -72,7 +72,7 @@ class BranchStaffController extends Controller
             'contact_number' => ['required', 'string', 'max:30'],
         ]);
 
-        $temporaryPassword = 'Branch@' . str_pad((string) mt_rand(1, 9999), 4, '0', STR_PAD_LEFT);
+        $temporaryPassword = 'Br#' . Str::random(10);
         $notificationEmail = $data['email'];
         $loginEmail = $this->uniqueLoginEmail($notificationEmail);
         $staff = User::create([

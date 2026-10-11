@@ -67,12 +67,12 @@ class BranchController extends Controller
         $legacyPayload = array_key_exists('password', $data) && filled($data['password']);
         $defaultPassword = $legacyPayload
             ? $data['password']
-            : 'Branch@' . str_pad((string) mt_rand(1, 9999), 4, '0', STR_PAD_LEFT);
+            : 'Br#' . Str::random(10);
         $notificationEmail = $data['email'];
         $loginEmail = $legacyPayload ? $data['email'] : $this->uniqueLoginEmail($data['email']);
 
         [$branch, $user] = DB::transaction(function () use ($data, $request, $defaultPassword, $legacyPayload, $loginEmail) {
-            $path = $request->file('bir_document')->store('bir_documents', 'public');
+            $path = $request->file('bir_document')->store('bir_documents', 'local');
 
             $branch = Branch::create([
                 'user_id' => $request->user()->id,
@@ -135,18 +135,17 @@ class BranchController extends Controller
             'Unauthorized access to BIR document.'
         );
 
-        abort_unless(
-            $branch->bir_document_path
-                && Storage::disk('public')->exists($branch->bir_document_path),
-            404,
-            'BIR document not found.'
-        );
+        $disk = null;
+        if ($branch->bir_document_path && Storage::disk('local')->exists($branch->bir_document_path)) {
+            $disk = Storage::disk('local');
+        } elseif ($branch->bir_document_path && Storage::disk('public')->exists($branch->bir_document_path)) {
+            $disk = Storage::disk('public');
+        }
 
-        /** @var FilesystemAdapter $disk */
-        $disk = Storage::disk('public');
+        abort_unless($disk !== null, 404, 'BIR document not found.');
 
         return response()->file($disk->path($branch->bir_document_path), [
-            'Content-Type' => $disk->mimeType($branch->bir_document_path),
+            'Content-Type' => $disk->mimeType($branch->bir_document_path) ?? 'application/octet-stream',
             'Content-Disposition' => 'inline',
             'X-Content-Type-Options' => 'nosniff',
         ]);

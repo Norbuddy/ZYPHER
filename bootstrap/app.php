@@ -18,6 +18,7 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->trustProxies(at: '*');
+        $middleware->validateCsrfTokens(except: ['webhooks/*']);
 
         $middleware->web(append: [
             \App\Http\Middleware\EnsureNotSuspended::class,

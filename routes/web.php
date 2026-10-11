@@ -37,17 +37,23 @@
             return Inertia::render('Auth/ForgotPassword', ['status' => session('status')]);
         })->name('password.request');
 
-        Route::post('/forgot-password', [OtpPasswordResetController::class, 'sendOtp'])->name('password.email');
+        Route::post('/forgot-password', [OtpPasswordResetController::class, 'sendOtp'])
+            ->middleware('throttle:5,1')
+            ->name('password.email');
 
         Route::get('/verify-otp', function () {
             return Inertia::render('Auth/VerifyOtp', request()->only('email'));
         })->name('otp.form');
-        Route::post('/verify-otp', [OtpPasswordResetController::class, 'verifyOtp'])->name('otp.verify');
+        Route::post('/verify-otp', [OtpPasswordResetController::class, 'verifyOtp'])
+            ->middleware('throttle:5,1')
+            ->name('otp.verify');
 
         Route::get('/reset-password', function () {
             return Inertia::render('Auth/ResetPassword', request()->only('email', 'token'));
         })->name('password.reset.form');
-        Route::post('/reset-password', [OtpPasswordResetController::class, 'resetPassword'])->name('password.update');
+        Route::post('/reset-password', [OtpPasswordResetController::class, 'resetPassword'])
+            ->middleware('throttle:5,1')
+            ->name('password.update');
     });
     // PayMongo webhooks (no auth — verified via signature)
     Route::post('/webhooks/paymongo', PayMongoWebhookController::class)->name('paymongo.webhook');

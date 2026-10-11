@@ -30,6 +30,8 @@ class SellerApplicationController extends Controller
 
     public function store(Request $request)
     {
+        abort_unless($request->user(), 401, 'Please log in before applying as a seller.');
+
         $data = $request->validate([
             'business_name' => 'required|max:255',
             'business_email' => 'required|email',
@@ -42,11 +44,8 @@ class SellerApplicationController extends Controller
             'reason' => 'nullable|string',
         ]);
 
-        $permitFilename = time() . '_' . $request->file('permit')->getClientOriginalName();
-        $request->file('permit')->move(public_path('seller-permits'), $permitFilename);
-
-        $legitFilename = time() . '_' . $request->file('product_legitimation')->getClientOriginalName();
-        $request->file('product_legitimation')->move(public_path('seller-permits'), $legitFilename);
+        $permitPath = $request->file('permit')->store('seller-permits', 'local');
+        $legitPath = $request->file('product_legitimation')->store('seller-permits', 'local');
 
         SellerApplication::create([
             'user_id' => $request->user()->id,
@@ -54,8 +53,8 @@ class SellerApplicationController extends Controller
             'business_email' => $data['business_email'],
             'contact_number' => $data['contact_number'],
             'business_location' => $data['business_location'],
-            'permit_path' => 'seller-permits/' . $permitFilename,
-            'product_legitimation_path' => 'seller-permits/' . $legitFilename,
+            'permit_path' => $permitPath,
+            'product_legitimation_path' => $legitPath,
             'requested_category_ids' => $data['category_ids'],
             'reason' => $data['reason'] ?? null,
             'status' => 'pending',

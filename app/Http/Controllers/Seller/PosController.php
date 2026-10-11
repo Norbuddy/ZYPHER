@@ -145,7 +145,8 @@ class PosController extends Controller
                 $payments = data_get($session, 'data.attributes.payments', []);
                 $paid = collect($payments)->contains(fn ($p) => data_get($p, 'attributes.status') === 'paid');
 
-                if ($paid || data_get($session, 'data.attributes.status') === 'active') {
+                $sessionStatus = data_get($session, 'data.attributes.status');
+                if ($paid || in_array($sessionStatus, ['paid', 'succeeded'], true)) {
                     $sale->update([
                         'payment_status' => 'paid',
                         'paid_at' => now(),

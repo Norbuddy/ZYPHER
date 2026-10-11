@@ -195,12 +195,12 @@ const formatDate = (date) => {
     });
 };
 
-const formatDocumentUrl = (path) => {
-    if (!path) {
+const formatDocumentUrl = (application) => {
+    if (!application || !application.bir_document_path) {
         return '#';
     }
 
-    return `/storage/${path}`;
+    return route('admin.branch-application.bir-document', application.id);
 };
 </script>
 
@@ -338,7 +338,7 @@ const formatDocumentUrl = (path) => {
 
                         <a
                             v-if="selectedApplication.bir_document_path"
-                            :href="formatDocumentUrl(selectedApplication.bir_document_path)"
+                            :href="formatDocumentUrl(selectedApplication)"
                             target="_blank"
                             rel="noopener noreferrer"
                             class="inline-flex items-center rounded-lg bg-indigo-50 px-3 py-2 text-xs font-medium text-indigo-600 hover:bg-indigo-100 transition"

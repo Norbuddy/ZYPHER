@@ -408,7 +408,7 @@ const applicationColumns = [
 
                         <a
                             v-if="selectedApplication.permit_path"
-                            :href="`/${selectedApplication.permit_path}`"
+                            :href="route('admin.seller-application.document', { sellerApplication: selectedApplication.id, type: 'permit' })"
                             target="_blank"
                             rel="noopener noreferrer"
                             class="inline-flex items-center rounded-lg bg-[#101114] px-4 py-2 text-xs font-medium text-white hover:bg-[#2b2b2b] transition"
@@ -435,7 +435,7 @@ const applicationColumns = [
 
                         <a
                             v-if="selectedApplication.product_legitimation_path"
-                            :href="`/${selectedApplication.product_legitimation_path}`"
+                            :href="route('admin.seller-application.document', { sellerApplication: selectedApplication.id, type: 'legitimation' })"
                             target="_blank"
                             rel="noopener noreferrer"
                             class="inline-flex items-center rounded-lg bg-[#101114] px-4 py-2 text-xs font-medium text-white hover:bg-[#2b2b2b] transition"

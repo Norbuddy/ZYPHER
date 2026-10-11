@@ -8,6 +8,7 @@ use App\Services\OrderService;
 use App\Services\PayMongoService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
@@ -32,7 +33,10 @@ class CheckoutController extends Controller
     public function store(Request $request, OrderService $orderService, PayMongoService $paymongo): RedirectResponse|SymfonyResponse
     {
         $data = $request->validate([
-            'address_id' => ['required', 'exists:addresses,id'],
+            'address_id' => [
+                'required',
+                Rule::exists('addresses', 'id')->where('user_id', $request->user()->id),
+            ],
             'platform_voucher_code' => ['nullable', 'string', 'max:40'],
             'latitude' => ['nullable', 'numeric', 'between:-90,90'],
             'longitude' => ['nullable', 'numeric', 'between:-180,180'],
@@ -127,7 +131,7 @@ class CheckoutController extends Controller
 
                 $payments = data_get($session, 'data.attributes.payments', []);
                 $paid = collect($payments)->contains(fn ($p) => data_get($p, 'attributes.status') === 'paid')
-                    || in_array($status, ['paid', 'active', 'succeeded'], true);
+                    || in_array($status, ['paid', 'succeeded'], true);
 
                 if ($paid) {
                     $orderService->confirmPayment($order);

@@ -40,4 +40,27 @@ class PayoutController extends Controller
 
         return back()->with('success', 'Marked as paid out.');
     }
+
+    public function markPaidTeam(\App\Models\Team $team): RedirectResponse
+    {
+        $unpaidShops = OrderShop::where('team_id', $team->id)
+            ->where('status', OrderShopStatus::Completed)
+            ->where('payout_status', PayoutStatus::Unpaid)
+            ->get();
+
+        if ($unpaidShops->isEmpty()) {
+            return back()->with('error', 'No unpaid payouts for this shop.');
+        }
+
+        foreach ($unpaidShops as $orderShop) {
+            $orderShop->update(['payout_status' => PayoutStatus::PaidOut]);
+        }
+
+        $owner = $team->owner;
+        if ($owner?->email && $unpaidShops->isNotEmpty()) {
+            \Illuminate\Support\Facades\Mail::to($owner->email)->send(new \App\Mail\PayoutNotificationMail($unpaidShops->first()));
+        }
+
+        return back()->with('success', "Payouts marked as paid for {$team->name}.");
+    }
 }

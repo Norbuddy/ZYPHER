@@ -254,7 +254,7 @@ const sendMessage = () => {
                     </button>
                 </div>
 
-                <div class="prose prose-sm max-w-none text-[#5F5E5A]" v-html="product.description"></div>
+                <div class="prose prose-sm max-w-none text-[#5F5E5A] whitespace-pre-line">{{ product.description }}</div>
             </div>
         </div>
 

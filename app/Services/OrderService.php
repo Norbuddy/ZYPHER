@@ -93,6 +93,10 @@ class OrderService
             }
 
             if ($platformVoucher) {
+                if ($voucherError = $this->vouchers->validate($platformVoucher, $user, $orderTotal)) {
+                    throw new \RuntimeException($voucherError);
+                }
+
                 $platformDiscount = $platformVoucher->calculateDiscount($orderTotal);
                 $this->vouchers->recordUsage($platformVoucher, $user, $platformDiscount, $order->id);
             }

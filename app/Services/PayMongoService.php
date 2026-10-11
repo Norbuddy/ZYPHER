@@ -246,8 +246,8 @@ class PayMongoService
         $webhookSecret = trim((string) config('paymongo.webhook_secret', ''));
 
         if ($webhookSecret === '' || $signatureHeader === null || $signatureHeader === '') {
-            if (app()->environment('local') || $this->isTestMode) {
-                Log::warning('PayMongo webhook signature skipped (no secret configured).');
+            if (app()->environment('local')) {
+                Log::warning('PayMongo webhook signature skipped in local environment (no secret configured).');
 
                 return true;
             }

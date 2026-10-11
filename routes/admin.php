@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\BannerController;
+use App\Http\Controllers\Admin\DocumentController;
 use App\Http\Controllers\Admin\PopupAdController;
 use App\Http\Controllers\Admin\BranchApplicationController;
 use App\Http\Controllers\Admin\SupplierApplicationController;
@@ -42,22 +43,25 @@ Route::middleware(['auth', 'verified', 'is.admin'])
 
         Route::get('/payouts', [PayoutController::class, 'index'])->name('payouts.index');
         Route::post('/payouts/{orderShop}/mark-paid', [PayoutController::class, 'markPaid'])->name('payouts.mark-paid');
+        Route::post('/payouts/team/{team}/mark-paid', [PayoutController::class, 'markPaidTeam'])->name('payouts.team.mark-paid');
 
         Route::get('/support', [SupportController::class, 'index'])->name('support.index');
         Route::get('/support/{conversation}', [SupportController::class, 'show'])->name('support.show');
         Route::post('/support/{conversation}', [SupportController::class, 'store'])->name('support.store');
         Route::post('/support/{conversation}/close', [SupportController::class, 'close'])->name('support.close');
 
-        Route::get('/supplier-application', [SupplierApplicationController::class, 'index'])->name('supplier-application.index');;
+        Route::get('/supplier-application', [SupplierApplicationController::class, 'index'])->name('supplier-application.index');
         Route::patch('/supplier-application/{supplierApplication}/approve', [SupplierApplicationController::class, 'approve'])->name('supplier-application.approve');
 
         Route::patch('/supplier-application/{supplierApplication}/reject', [SupplierApplicationController::class, 'reject'])->name('supplier-application.reject');
 
         Route::get('/seller-application', [SellerApplicationController::class, 'index'])->name('seller-application.index');
+        Route::get('/seller-application/{sellerApplication}/document/{type}', [DocumentController::class, 'viewSellerDocument'])->name('seller-application.document');
         Route::patch('/seller-application/{sellerApplication}/approve', [SellerApplicationController::class, 'approve'])->name('seller-application.approve');
         Route::patch('/seller-application/{sellerApplication}/reject', [SellerApplicationController::class, 'reject'])->name('seller-application.reject');
 
         Route::get('/branch-application', [BranchApplicationController::class, 'index'])->name('branch-application.index');
+        Route::get('/branch-application/{branch}/bir-document', [DocumentController::class, 'viewBranchBir'])->name('branch-application.bir-document');
         Route::patch('/branch-application/{branch}/approve', [BranchApplicationController::class, 'approve'])->name('branch-application.approve');
         Route::patch('/branch-application/{branch}/reject', [BranchApplicationController::class, 'reject'])->name('branch-application.reject');
         Route::patch('/branch-application/{branch}/suspend', [BranchApplicationController::class, 'suspend'])->name('branch-application.suspend');
