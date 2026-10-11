@@ -15,3 +15,4 @@ chmod -R 777 /home/site/wwwroot/bootstrap/cache
 
 cd /home/site/wwwroot
 php artisan storage:link || true
+php artisan optimize:clear || true
