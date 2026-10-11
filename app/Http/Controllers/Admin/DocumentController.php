@@ -25,17 +25,26 @@ class DocumentController extends Controller
 
         abort_unless($relPath, 404, 'Document record not found.');
 
-        // 1. Check local private disk (storage/app/private/)
-        if (Storage::disk('local')->exists($relPath)) {
-            $disk = Storage::disk('local');
-            return response()->file($disk->path($relPath), [
-                'Content-Type' => $disk->mimeType($relPath) ?? 'application/octet-stream',
-                'Content-Disposition' => 'inline',
-                'X-Content-Type-Options' => 'nosniff',
-            ]);
+        $base = basename($relPath);
+        $candidates = array_unique([
+            ltrim($relPath, '/\\'),
+            'seller-permits/' . $base,
+            'supplier-permits/' . $base,
+            $base,
+        ]);
+
+        $disk = Storage::disk('local');
+        foreach ($candidates as $candidate) {
+            if ($disk->exists($candidate)) {
+                return response()->file($disk->path($candidate), [
+                    'Content-Type' => $disk->mimeType($candidate) ?? 'application/octet-stream',
+                    'Content-Disposition' => 'inline',
+                    'X-Content-Type-Options' => 'nosniff',
+                ]);
+            }
         }
 
-        // 2. Fallback to legacy path in public_path if older application
+        // Fallback to legacy path in public_path if older application
         $legacyFullPath = public_path($relPath);
         if (file_exists($legacyFullPath) && is_file($legacyFullPath)) {
             $mime = mime_content_type($legacyFullPath) ?: 'application/octet-stream';
@@ -58,21 +67,29 @@ class DocumentController extends Controller
         $relPath = $branch->bir_document_path;
         abort_unless($relPath, 404, 'BIR document record not found.');
 
-        // 1. Check local private disk (storage/app/private/)
-        if (Storage::disk('local')->exists($relPath)) {
-            $disk = Storage::disk('local');
-            return response()->file($disk->path($relPath), [
-                'Content-Type' => $disk->mimeType($relPath) ?? 'application/octet-stream',
-                'Content-Disposition' => 'inline',
-                'X-Content-Type-Options' => 'nosniff',
-            ]);
+        $base = basename($relPath);
+        $candidates = array_unique([
+            ltrim($relPath, '/\\'),
+            'bir_documents/' . $base,
+            $base,
+        ]);
+
+        $disk = Storage::disk('local');
+        foreach ($candidates as $candidate) {
+            if ($disk->exists($candidate)) {
+                return response()->file($disk->path($candidate), [
+                    'Content-Type' => $disk->mimeType($candidate) ?? 'application/octet-stream',
+                    'Content-Disposition' => 'inline',
+                    'X-Content-Type-Options' => 'nosniff',
+                ]);
+            }
         }
 
-        // 2. Check public storage disk for legacy uploaded files
+        // Fallback to public storage disk for legacy uploaded files
         if (Storage::disk('public')->exists($relPath)) {
-            $disk = Storage::disk('public');
-            return response()->file($disk->path($relPath), [
-                'Content-Type' => $disk->mimeType($relPath) ?? 'application/octet-stream',
+            $pubDisk = Storage::disk('public');
+            return response()->file($pubDisk->path($relPath), [
+                'Content-Type' => $pubDisk->mimeType($relPath) ?? 'application/octet-stream',
                 'Content-Disposition' => 'inline',
                 'X-Content-Type-Options' => 'nosniff',
             ]);

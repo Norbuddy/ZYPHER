@@ -5,6 +5,9 @@
 
     RewriteEngine On
 
+    # Block direct access to sensitive uploaded verification documents
+    RewriteRule ^(seller-permits|supplier-permits|storage/bir_documents) - [F,L]
+
     # Handle Authorization Header
     RewriteCond %{HTTP:Authorization} .
     RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
