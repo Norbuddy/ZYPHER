@@ -19,8 +19,16 @@ const minRating = ref(props.filters.min_rating || '');
 const sort = ref(props.filters.sort || 'relevance');
 
 const availableCategories = computed(() => {
-    const list = [...props.categories];
-    if (!list.some(c => c.name?.toLowerCase() === 'shoes' || c.slug === 'shoes')) {
+    const seen = new Set();
+    const list = [];
+    for (const cat of (props.categories || [])) {
+        const key = cat.name?.trim().toLowerCase();
+        if (key && !seen.has(key)) {
+            seen.add(key);
+            list.push(cat);
+        }
+    }
+    if (!seen.has('shoes')) {
         list.push({ id: 'shoes', name: 'Shoes', slug: 'shoes' });
     }
     return list;

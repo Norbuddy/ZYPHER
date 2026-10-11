@@ -21,6 +21,12 @@ class HomeController extends Controller
                 'parent_id' => null,
                 'sort_order' => 4,
             ]);
+            Category::where('slug', 'fashion-shoes')->update(['is_active' => false]);
+
+            Product::where('name', 'like', '%Louis Vuitton%')
+                ->orWhere('name', 'like', '%Nike Dunk%')
+                ->orWhere('name', 'like', '%Stay Awake%')
+                ->update(['status' => \App\Enums\ProductStatus::Inactive]);
         } catch (\Throwable $e) {
             // Graceful fallback
         }
@@ -28,12 +34,16 @@ class HomeController extends Controller
         $categories = Category::query()
             ->where('parent_id', '=', null)
             ->where('is_active', '=', true)
+            ->where('slug', '!=', 'fashion-shoes')
             ->orderBy('sort_order', 'asc')
             ->get(['id', 'name', 'slug', 'image_path']);
 
         $productBaseQuery = fn () => Product::query()
             ->active()
             ->where('name', '!=', 'chromehearts')
+            ->where('name', 'not like', '%Louis Vuitton%')
+            ->where('name', 'not like', '%Nike Dunk%')
+            ->where('name', 'not like', '%Stay Awake%')
             ->whereHas('team', fn ($query) => $query->where('name', '!=', 'Supplier Demo Supplier Team'))
             ->with(['images' => fn ($q) => $q->where('is_primary', true), 'team:id,name,slug']);
 

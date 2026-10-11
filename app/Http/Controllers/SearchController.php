@@ -52,6 +52,9 @@ class SearchController extends Controller
 
         $products = Product::query()
             ->where('status', 'active')
+            ->where('name', 'not like', '%Louis Vuitton%')
+            ->where('name', 'not like', '%Nike Dunk%')
+            ->where('name', 'not like', '%Stay Awake%')
 
             ->with([
                 'images' => fn ($q) => $q->where('is_primary', true),
@@ -123,20 +126,24 @@ class SearchController extends Controller
             ->withQueryString();
 
         try {
-            Category::updateOrCreate(
-                ['slug' => 'shoes'],
-                ['name' => 'Shoes', 'parent_id' => null, 'is_active' => true, 'sort_order' => 4]
-            );
-            Category::where('name', 'Shoes')->orWhere('slug', 'shoes')->update([
+            Category::where('slug', 'shoes')->update([
+                'name' => 'Shoes',
                 'is_active' => true,
                 'parent_id' => null,
                 'sort_order' => 4,
             ]);
+            Category::where('slug', 'fashion-shoes')->update(['is_active' => false]);
+
+            Product::where('name', 'like', '%Louis Vuitton%')
+                ->orWhere('name', 'like', '%Nike Dunk%')
+                ->orWhere('name', 'like', '%Stay Awake%')
+                ->update(['status' => \App\Enums\ProductStatus::Inactive]);
         } catch (\Throwable $e) {}
 
         $categories = Category::query()
             ->where('parent_id', null)
             ->where('is_active', true)
+            ->where('slug', '!=', 'fashion-shoes')
             ->orderBy('sort_order', 'asc')
             ->get(['id', 'name', 'slug']);
 
