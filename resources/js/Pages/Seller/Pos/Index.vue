@@ -219,6 +219,10 @@ const productImageUrl = (product) => {
                     </button>
                 </div>
 
+                <div v-if="$page.props.errors?.payment || $page.props.errors?.checkout" class="mb-3 rounded-xl border border-rose-200 bg-rose-50 p-2.5 text-xs text-rose-700">
+                    {{ $page.props.errors.payment || $page.props.errors.checkout }}
+                </div>
+
                 <button
                     @click="checkout"
                     :disabled="cart.length === 0 || processing"

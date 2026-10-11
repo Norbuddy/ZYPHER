@@ -158,35 +158,35 @@ class CheckoutController extends Controller
     protected function buildLineItems(Order $order): array
     {
         $order->loadMissing('orderShops.items');
+        $targetCentavos = (int) round(((float) $order->total_amount) * 100);
 
         $items = [];
+        $sumCentavos = 0;
         foreach ($order->orderShops as $shop) {
             foreach ($shop->items as $item) {
+                $lineAmount = (int) round(((float) ($item->price_at_purchase ?? $item->unit_price ?? 0)) * 100);
+                $qty = max(1, (int) $item->quantity);
                 $items[] = [
                     'name' => mb_substr($item->product_name ?? $item->name ?? 'Item', 0, 100),
-                    'quantity' => max(1, (int) $item->quantity),
-                    // OrderItem stores the price in price_at_purchase (not unit_price)
-                    'amount' => (int) round(((float) ($item->price_at_purchase ?? $item->unit_price ?? 0)) * 100),
+                    'quantity' => $qty,
+                    'amount' => max(100, $lineAmount),
                     'currency' => 'PHP',
                 ];
+                $sumCentavos += ($lineAmount * $qty);
             }
         }
 
-        if (empty($items)) {
-            $items[] = [
-                'name' => 'Order '.$order->order_number,
-                'quantity' => 1,
-                'amount' => max(100, (int) round(((float) $order->total_amount) * 100)),
-                'currency' => 'PHP',
-            ];
+        // If line items sum matches order total exactly, return detailed line items
+        if (! empty($items) && $sumCentavos === $targetCentavos) {
+            return $items;
         }
 
-        // PayMongo rejects zero / sub-100-centavo line items
-        foreach ($items as &$line) {
-            $line['amount'] = max(100, (int) $line['amount']);
-        }
-        unset($line);
-
-        return $items;
+        // If there are vouchers, platform discounts, or shipping adjustments, provide exact consolidated total
+        return [[
+            'name' => 'Order '.$order->order_number,
+            'quantity' => 1,
+            'amount' => max(100, $targetCentavos),
+            'currency' => 'PHP',
+        ]];
     }
 }

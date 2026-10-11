@@ -98,12 +98,29 @@ class PosController extends Controller
         }
 
         try {
-            $lineItems = $sale->items->map(fn ($item) => [
-                'name' => mb_substr($item->product_name.' '.($item->variant_label ?? ''), 0, 100),
-                'quantity' => (int) $item->quantity,
-                'amount' => (int) round(((float) $item->unit_price) * 100),
-                'currency' => 'PHP',
-            ])->values()->all();
+            $targetCentavos = (int) round(((float) $sale->total_amount) * 100);
+            $sumCentavos = 0;
+            $lineItems = $sale->items->map(function ($item) use (&$sumCentavos) {
+                $amount = (int) round(((float) $item->unit_price) * 100);
+                $qty = (int) $item->quantity;
+                $sumCentavos += ($amount * $qty);
+
+                return [
+                    'name' => mb_substr($item->product_name.' '.($item->variant_label ?? ''), 0, 100),
+                    'quantity' => $qty,
+                    'amount' => max(100, $amount),
+                    'currency' => 'PHP',
+                ];
+            })->values()->all();
+
+            if ($sumCentavos !== $targetCentavos || empty($lineItems)) {
+                $lineItems = [[
+                    'name' => 'POS Sale '.$sale->sale_number,
+                    'quantity' => 1,
+                    'amount' => max(100, $targetCentavos),
+                    'currency' => 'PHP',
+                ]];
+            }
 
             $methods = match ($data['payment_method']) {
                 'card', 'atm' => ['card'],
