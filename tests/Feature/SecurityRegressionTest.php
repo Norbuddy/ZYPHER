@@ -13,6 +13,7 @@ use Tests\TestCase;
 
 class SecurityRegressionTest extends TestCase
 {
+    use RefreshDatabase;
     /**
      * SEC-02 Regression Test:
      * Webhook endpoint /webhooks/paymongo MUST NOT require CSRF token (no 419).
@@ -117,5 +118,76 @@ class SecurityRegressionTest extends TestCase
             $this->assertNotNull($route, "Route {$routeName} must be defined.");
             $this->assertContains('is.admin', $route->gatherMiddleware());
         }
+    }
+
+    /**
+     * Admin Application Test:
+     * Admin can approve a seller application without 500 error, creating team and setting seller_admin role.
+     */
+    public function test_admin_can_approve_seller_application_successfully(): void
+    {
+        $admin = User::factory()->create([
+            'role' => 'admin',
+            'is_admin' => true,
+        ]);
+
+        $applicant = User::factory()->create([
+            'role' => 'user',
+            'current_team_id' => null,
+        ]);
+
+        $application = SellerApplication::create([
+            'user_id' => $applicant->id,
+            'business_name' => 'Friend Store',
+            'business_email' => 'friend@example.com',
+            'contact_number' => '09123456789',
+            'business_location' => 'Manila',
+            'permit_path' => 'seller-permits/test-permit.pdf',
+            'product_legitimation_path' => 'seller-permits/test-legit.pdf',
+            'requested_category_ids' => [],
+            'status' => 'pending',
+        ]);
+
+        $response = $this->actingAs($admin)->patch("/admin/seller-application/{$application->id}/approve");
+
+        $response->assertSessionHasNoErrors();
+        $this->assertDatabaseHas('teams', [
+            'user_id' => $applicant->id,
+            'name' => 'Friend Store',
+            'status' => 'approved',
+        ]);
+        $this->assertEquals('approved', $application->fresh()->status);
+        $this->assertEquals('seller_admin', $applicant->fresh()->role);
+        $this->assertNotNull($applicant->fresh()->current_team_id);
+    }
+
+    /**
+     * Admin Application Test:
+     * Admin can approve a branch application successfully without errors.
+     */
+    public function test_admin_can_approve_branch_application_successfully(): void
+    {
+        $admin = User::factory()->create([
+            'role' => 'admin',
+            'is_admin' => true,
+        ]);
+
+        $owner = User::factory()->create([
+            'role' => 'seller_admin',
+        ]);
+
+        $branch = Branch::create([
+            'user_id' => $owner->id,
+            'name' => 'Friend Branch',
+            'phone' => '09123456789',
+            'address' => 'Manila City',
+            'bir_document_path' => 'bir_documents/test.pdf',
+            'status' => 'pending',
+        ]);
+
+        $response = $this->actingAs($admin)->patch("/admin/branch-application/{$branch->id}/approve");
+
+        $response->assertSessionHasNoErrors();
+        $this->assertEquals('active', $branch->fresh()->status);
     }
 }

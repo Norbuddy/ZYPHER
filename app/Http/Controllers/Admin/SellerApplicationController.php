@@ -27,13 +27,14 @@ class SellerApplicationController extends Controller
 
     public function approve(SellerApplication $sellerApplication)
     {
-        DB::transaction(function () use ($sellerApplication) {
-            $user = $sellerApplication->user;
+        $user = $sellerApplication->user;
+        abort_unless($user, 404, 'Applicant user account not found.');
 
+        DB::transaction(function () use ($sellerApplication, $user) {
             $team = $user->ownedTeams()->where('personal_team', false)->first();
 
             if (!$team) {
-                $team = Team::create([
+                $team = Team::forceCreate([
                     'user_id' => $user->id,
                     'name' => $sellerApplication->business_name,
                     'slug' => Str::slug($sellerApplication->business_name) . '-' . Str::random(5),
@@ -41,14 +42,25 @@ class SellerApplicationController extends Controller
                     'personal_team' => false,
                 ]);
 
-                $user->teams()->attach($team);
+                if (! $user->teams()->where('teams.id', $team->id)->exists()) {
+                    $user->teams()->attach($team, ['role' => 'admin']);
+                }
             } else {
                 $team->update(['status' => 'approved']);
             }
 
-            $team->allowedCategories()->syncWithoutDetaching($sellerApplication->requested_category_ids);
+            $categories = is_array($sellerApplication->requested_category_ids)
+                ? array_filter($sellerApplication->requested_category_ids)
+                : [];
 
-            $user->update(['current_team_id' => $team->id]);
+            if (!empty($categories)) {
+                $team->allowedCategories()->syncWithoutDetaching($categories);
+            }
+
+            $user->forceFill([
+                'current_team_id' => $team->id,
+                'role' => $user->role === 'admin' ? 'admin' : 'seller_admin',
+            ])->save();
 
             $sellerApplication->update([
                 'status' => 'approved',

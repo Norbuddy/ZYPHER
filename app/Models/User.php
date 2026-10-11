@@ -38,6 +38,7 @@ class User extends Authenticatable
         'role',
         'branch_role',
         'branch_id',
+        'current_team_id',
         'is_suspended',
         'is_admin',
         'is_supplier',

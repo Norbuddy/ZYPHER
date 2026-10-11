@@ -23,9 +23,11 @@ class BranchApplicationController extends Controller
                     'address' => $branch->address,
                     'latitude' => $branch->latitude,
                     'longitude' => $branch->longitude,
-                    'status' => in_array(strtolower((string) $branch->status), ['active', 'approved'], true)
-                        ? 'active'
-                        : 'suspended',
+                    'status' => match (strtolower((string) $branch->status)) {
+                        'active', 'approved' => 'active',
+                        'pending' => 'pending',
+                        default => 'suspended',
+                    },
                     'bir_document_path' => $branch->bir_document_path,
                     'user' => $branch->user ? [
                         'id' => $branch->user->id,

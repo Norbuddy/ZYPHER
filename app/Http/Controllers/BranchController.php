@@ -102,7 +102,11 @@ class BranchController extends Controller
         });
 
         if (! $legacyPayload) {
-            Mail::to($notificationEmail)->queue(new BranchAccountCreatedMail($user, $defaultPassword, $branch->name));
+            try {
+                Mail::to($notificationEmail)->queue(new BranchAccountCreatedMail($user, $defaultPassword, $branch->name));
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::warning('Branch email notification failed: ' . $e->getMessage());
+            }
         }
 
         return back()->with('success', "Branch {$branch->name} added. Login: {$user->email}. Credentials sent to {$notificationEmail}.");
