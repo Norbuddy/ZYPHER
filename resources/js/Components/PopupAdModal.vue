@@ -1,22 +1,54 @@
 <script setup>
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted, computed, watch } from 'vue';
 import { usePage, Link } from '@inertiajs/vue3';
 
 const page = usePage();
 const show = ref(false);
 
-const ad = computed(() => page.props.activePopupAd);
+const isStorefront = computed(() => page.component === 'Home');
+const ad = computed(() => (isStorefront.value ? page.props.activePopupAd : null));
 
 const imageUrl = (path) => (path.startsWith('images/') ? '/' : '/storage/') + path;
 
-const dismiss = () => {
-    show.value = false;
+const isDismissed = (id) => {
+    try {
+        return !!sessionStorage.getItem(`popup_ad_dismissed_${id}`);
+    } catch {
+        return false;
+    }
 };
 
-onMounted(() => {
-    if (ad.value) {
-        show.value = true;
+const markDismissed = (id) => {
+    try {
+        sessionStorage.setItem(`popup_ad_dismissed_${id}`, 'true');
+    } catch {}
+};
+
+const dismiss = () => {
+    show.value = false;
+    if (ad.value?.id) {
+        markDismissed(ad.value.id);
     }
+};
+
+const checkAndShow = () => {
+    if (!isStorefront.value || !ad.value) {
+        show.value = false;
+        return;
+    }
+    if (ad.value?.id && isDismissed(ad.value.id)) {
+        show.value = false;
+        return;
+    }
+    show.value = true;
+};
+
+watch([() => page.component, () => page.props.activePopupAd], () => {
+    checkAndShow();
+});
+
+onMounted(() => {
+    checkAndShow();
 });
 </script>
 

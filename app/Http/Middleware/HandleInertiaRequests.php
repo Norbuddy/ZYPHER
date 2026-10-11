@@ -86,9 +86,11 @@ class HandleInertiaRequests extends Middleware
                 'pending_sale_id' => fn () => $request->session()->get('pending_sale_id'),
                 'demo_payment' => fn () => $request->session()->get('demo_payment'),
             ],
-            'activePopupAd' => fn () => \App\Models\PopupAd::currentlyLive()
-                ->inRandomOrder()
-                ->first(['id', 'title', 'message', 'image_path', 'button_text', 'button_link', 'updated_at']),
+            'activePopupAd' => fn () => $request->routeIs('home')
+                ? \App\Models\PopupAd::currentlyLive()
+                    ->inRandomOrder()
+                    ->first(['id', 'title', 'message', 'image_path', 'button_text', 'button_link', 'updated_at'])
+                : null,
             'supplierNotifications' => $supplierNotifications,
             'unreadMessageCount' => $unreadMessageCount,
             'branches' => $request->user()
