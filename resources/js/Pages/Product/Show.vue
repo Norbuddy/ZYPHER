@@ -381,7 +381,7 @@ onUnmounted(() => {
                 <!-- Right Column: Product Details & Purchase Actions (6 cols) -->
                 <div class="lg:col-span-6 space-y-6">
                     <!-- Shop Card Widget -->
-                    <div class="p-3.5 rounded-2xl border border-[#EAEAE5] bg-white flex items-center justify-between gap-4 shadow-2xs">
+                    <div class="p-3.5 sm:p-4 rounded-2xl border border-[#EAEAE5] bg-white flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs">
                         <div class="flex items-center gap-3 min-w-0">
                             <!-- Shop Logo Circle -->
                             <div class="w-11 h-11 rounded-full bg-[#101114] text-white flex items-center justify-center text-sm font-bold overflow-hidden shrink-0 border border-[#EAEAE5]">
@@ -416,7 +416,7 @@ onUnmounted(() => {
                         <button
                             type="button"
                             @click="openMessageModal"
-                            class="shrink-0 px-3.5 py-2 rounded-xl border border-[#E4E4E0] hover:border-[#101114] text-xs font-semibold text-[#101114] bg-white hover:bg-[#F7F7F5] transition-colors flex items-center gap-2 shadow-2xs"
+                            class="w-full sm:w-auto shrink-0 px-3.5 py-2.5 sm:py-2 rounded-xl border border-[#E4E4E0] hover:border-[#101114] text-xs font-semibold text-[#101114] bg-white hover:bg-[#F7F7F5] transition-colors flex items-center justify-center gap-2 shadow-2xs active:scale-[0.99]"
                         >
                             <svg class="w-4 h-4 text-[#8A8B90]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
@@ -520,7 +520,7 @@ onUnmounted(() => {
                                     type="button"
                                     @click="decreaseQuantity"
                                     :disabled="quantity <= 1"
-                                    class="w-10 h-10 flex items-center justify-center text-[#101114] hover:bg-[#F7F7F5] disabled:opacity-30 disabled:cursor-not-allowed transition-colors font-medium text-base"
+                                    class="w-11 h-11 flex items-center justify-center text-[#101114] hover:bg-[#F7F7F5] active:bg-[#EAEAE5] disabled:opacity-30 disabled:cursor-not-allowed transition-colors font-medium text-lg cursor-pointer select-none"
                                 >
                                     −
                                 </button>
@@ -528,12 +528,12 @@ onUnmounted(() => {
                                     v-model.number="quantity"
                                     type="number"
                                     min="1"
-                                    class="w-14 text-center text-sm font-semibold text-[#101114] border-0 focus:ring-0 p-0"
+                                    class="w-14 h-11 text-center text-sm font-semibold text-[#101114] border-0 focus:ring-0 p-0"
                                 />
                                 <button
                                     type="button"
                                     @click="increaseQuantity"
-                                    class="w-10 h-10 flex items-center justify-center text-[#101114] hover:bg-[#F7F7F5] transition-colors font-medium text-base"
+                                    class="w-11 h-11 flex items-center justify-center text-[#101114] hover:bg-[#F7F7F5] active:bg-[#EAEAE5] transition-colors font-medium text-lg cursor-pointer select-none"
                                 >
                                     +
                                 </button>
@@ -608,8 +608,8 @@ onUnmounted(() => {
             </div>
 
             <!-- Customer Reviews Section (Matching Image 1) -->
-            <section class="py-10">
-                <div class="flex items-center justify-between gap-4 mb-6 flex-wrap">
+            <section class="py-8 sm:py-10">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
                     <div>
                         <h2 class="text-xl font-bold text-[#101114] tracking-tight">
                             Reviews ({{ sortedReviews.length }})
@@ -620,7 +620,7 @@ onUnmounted(() => {
                     </div>
 
                     <!-- Review Filter Sort -->
-                    <div class="flex items-center gap-2">
+                    <div class="flex items-center gap-2 self-start sm:self-auto">
                         <select
                             v-model="reviewSort"
                             class="text-xs font-medium text-[#101114] border border-[#E4E4E0] rounded-xl px-3 py-2 bg-white focus:border-[#101114] focus:ring-0 shadow-2xs"
@@ -637,19 +637,19 @@ onUnmounted(() => {
                     <div
                         v-for="rev in sortedReviews"
                         :key="rev.id"
-                        class="p-5 rounded-2xl border border-[#EAEAE5] bg-white shadow-2xs space-y-3"
+                        class="p-4 sm:p-5 rounded-2xl border border-[#EAEAE5] bg-white shadow-2xs space-y-3"
                     >
                         <div class="flex items-start justify-between gap-3">
-                            <div class="flex items-center gap-3">
+                            <div class="flex items-center gap-3 min-w-0">
                                 <!-- User Avatar Circle -->
                                 <div class="w-10 h-10 rounded-full bg-[#EAEAE5] text-[#101114] font-bold text-sm flex items-center justify-center shrink-0">
                                     {{ rev.user?.name?.charAt(0) || 'N' }}
                                 </div>
 
-                                <div>
-                                    <div class="flex items-center gap-2">
-                                        <span class="text-xs font-bold text-[#101114]">{{ rev.user?.name || 'Customer' }}</span>
-                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-black text-white">
+                                <div class="min-w-0">
+                                    <div class="flex flex-wrap items-center gap-1.5 sm:gap-2">
+                                        <span class="text-xs font-bold text-[#101114] truncate max-w-[140px] sm:max-w-none">{{ rev.user?.name || 'Customer' }}</span>
+                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-black text-white shrink-0">
                                             ✔ Verified purchase
                                         </span>
                                     </div>
@@ -750,50 +750,50 @@ onUnmounted(() => {
         >
             <div
                 v-if="showAddToCartModal"
-                class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs"
+                class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-xs"
                 @click.self="showAddToCartModal = false"
             >
-                <div class="bg-white rounded-3xl p-6 sm:p-7 max-w-md w-full shadow-2xl border border-gray-100 transform transition-all relative overflow-hidden">
+                <div class="bg-white rounded-2xl sm:rounded-3xl p-5 sm:p-7 max-w-md w-full shadow-2xl border border-gray-100 transform transition-all relative overflow-hidden">
                     <!-- Top Cool Glow Accent -->
                     <div class="absolute -top-12 -right-12 w-32 h-32 bg-emerald-400/20 rounded-full blur-2xl pointer-events-none"></div>
 
                     <!-- Header with animated success check -->
-                    <div class="flex items-center gap-3.5 mb-5">
-                        <div class="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 border border-emerald-100 animate-pulse">
+                    <div class="flex items-center gap-3 sm:gap-3.5 mb-5">
+                        <div class="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 border border-emerald-100 animate-pulse">
                             <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
                             </svg>
                         </div>
                         <div>
-                            <h3 class="text-base font-bold text-[#101114]">Successfully Added to Cart!</h3>
+                            <h3 class="text-sm sm:text-base font-bold text-[#101114]">Successfully Added to Cart!</h3>
                             <p class="text-xs text-[#8A8B90]">Nalagay na po ang item sa iyong shopping cart.</p>
                         </div>
                     </div>
 
                     <!-- Product Summary Card -->
-                    <div v-if="addedItemSnapshot" class="p-4 rounded-2xl bg-[#F7F7F5] border border-[#EAEAE5] flex items-center gap-3.5 mb-6">
-                        <div class="w-16 h-16 rounded-xl bg-white border border-[#EAEAE5] overflow-hidden shrink-0">
+                    <div v-if="addedItemSnapshot" class="p-3.5 sm:p-4 rounded-2xl bg-[#F7F7F5] border border-[#EAEAE5] flex items-center gap-3 sm:gap-3.5 mb-6">
+                        <div class="w-14 h-14 sm:w-16 sm:h-16 rounded-xl bg-white border border-[#EAEAE5] overflow-hidden shrink-0">
                             <img :src="imageUrl(addedItemSnapshot.image)" class="w-full h-full object-contain p-1" />
                         </div>
                         <div class="min-w-0 flex-1">
                             <h4 class="text-xs font-bold text-[#101114] truncate">{{ addedItemSnapshot.name }}</h4>
-                            <p class="text-[11px] text-[#8A8B90] mt-0.5">Size/Option: {{ addedItemSnapshot.variantLabel }} · Qty: {{ addedItemSnapshot.quantity }}</p>
+                            <p class="text-[11px] text-[#8A8B90] mt-0.5 truncate">Size/Option: {{ addedItemSnapshot.variantLabel }} · Qty: {{ addedItemSnapshot.quantity }}</p>
                             <p class="text-xs font-extrabold text-[#101114] mt-1">₱{{ Number(addedItemSnapshot.price * addedItemSnapshot.quantity).toLocaleString('en-US', { minimumFractionDigits: 2 }) }}</p>
                         </div>
                     </div>
 
                     <!-- Actions -->
-                    <div class="grid grid-cols-2 gap-3">
+                    <div class="grid grid-cols-2 gap-2.5 sm:gap-3">
                         <button
                             type="button"
                             @click="showAddToCartModal = false"
-                            class="h-11 rounded-xl border border-[#E4E4E0] hover:bg-[#F7F7F5] text-xs font-bold text-[#101114] transition-colors"
+                            class="h-11 rounded-xl border border-[#E4E4E0] hover:bg-[#F7F7F5] active:bg-[#EAEAE5] text-xs font-bold text-[#101114] transition-colors"
                         >
                             Continue Shopping
                         </button>
                         <Link
                             :href="route('cart.index')"
-                            class="h-11 rounded-xl bg-[#101114] hover:bg-black text-white text-xs font-bold flex items-center justify-center gap-1.5 shadow-sm transition-colors"
+                            class="h-11 rounded-xl bg-[#101114] hover:bg-black active:bg-neutral-800 text-white text-xs font-bold flex items-center justify-center gap-1.5 shadow-sm transition-colors"
                         >
                             <span>View Cart</span>
                             <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
