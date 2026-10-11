@@ -209,32 +209,83 @@ const destroy = (banner) => {
             </div>
         </div>
 
-        <div v-if="showForm" class="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4" @click.self="showForm = false">
-            <div class="bg-white rounded-xl p-6 w-full max-w-2xl max-h-[92vh] overflow-y-auto">
-                <h3 class="text-sm font-semibold mb-4">{{ editingBanner ? 'Edit Banner' : 'Add Banner' }}</h3>
-
-                <div class="mb-5 rounded-lg border border-dashed border-[#D8D8D3] bg-[#FAFAF8] p-3">
-                    <p class="text-[10px] font-medium text-[#8A8B90] mb-2">Where each field appears on the banner:</p>
-                    <svg viewBox="0 0 400 66" class="w-full h-auto">
-                        <rect x="1" y="1" width="398" height="64" rx="6" fill="#EEEEEC" stroke="#D8D8D3" />
-                        <rect x="14" y="12" width="140" height="10" rx="2" fill="#B9B9F5" />
-                        <text x="18" y="20" font-size="7" fill="#4B3FBF">Title</text>
-                        <rect x="14" y="28" width="110" height="7" rx="2" fill="#CFCFCF" />
-                        <text x="18" y="34" font-size="6" fill="#777">Subtitle</text>
-                        <rect x="14" y="42" width="56" height="14" rx="7" fill="#101114" />
-                        <text x="24" y="52" font-size="7" fill="white">Button</text>
-                        <rect x="280" y="8" width="108" height="50" rx="4" fill="none" stroke="#A78BFA" stroke-dasharray="4 2" />
-                        <text x="292" y="36" font-size="7" fill="#7C3AED">Image (full banner)</text>
-                    </svg>
+        <div v-if="showForm" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" @click.self="showForm = false">
+            <div class="bg-white rounded-2xl p-6 w-full max-w-4xl lg:max-w-5xl max-h-[94vh] overflow-y-auto shadow-2xl">
+                <div class="flex items-center justify-between mb-4 pb-3 border-b border-[#EAEAE5]">
+                    <div>
+                        <h3 class="text-base font-bold text-[#101114]">{{ editingBanner ? 'Edit Banner' : 'Add Banner' }}</h3>
+                        <p class="text-xs text-[#8A8B90] mt-0.5">Customize your storefront banner copy, colors, button, and image.</p>
+                    </div>
+                    <button type="button" @click="showForm = false" class="p-1.5 rounded-lg text-[#8A8B90] hover:text-[#101114] hover:bg-[#F4F4F2] transition">
+                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
                 </div>
 
-                <div class="grid grid-cols-2 gap-4">
-                    <div class="space-y-3">
+                <!-- PROMINENT LIVE PREVIEW (LARGE & CLEAR) -->
+                <div class="mb-6 rounded-2xl border border-[#E4E4E0] bg-[#FAFAF8] p-4 sm:p-5">
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="flex items-center gap-2">
+                            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                            <span class="text-xs font-bold text-[#101114] uppercase tracking-wider">Live Banner Preview</span>
+                        </div>
+                        <span class="text-[11px] font-medium text-[#8A8B90]">Storefront Dimensions (1280 × 210 px)</span>
+                    </div>
+
+                    <div class="relative w-full rounded-xl overflow-hidden border border-[#E4E4E0] bg-[#EEEEEC] shadow-inner" style="aspect-ratio: 1280 / 210;">
+                        <img v-if="imagePreview" :src="imagePreview" class="absolute inset-0 w-full h-full object-cover" />
+                        <div v-else class="absolute inset-0 flex items-center justify-center text-xs text-[#8A8B90] bg-[#F0F0EE]">
+                            No banner image selected (Upload 1280×210px image below)
+                        </div>
+
+                        <!-- Gradient overlay matching storefront -->
+                        <div class="absolute inset-0 bg-gradient-to-r from-black/35 via-black/10 to-transparent pointer-events-none"></div>
+
+                        <div class="relative z-10 h-full flex items-center px-6 sm:px-10 lg:px-12 max-w-xl">
+                            <div class="flex flex-col justify-center gap-1 sm:gap-2">
+                                <p class="text-[9px] sm:text-[10px] uppercase tracking-[0.2em] font-semibold text-white/90 drop-shadow-xs">
+                                    Zypher Marketplace
+                                </p>
+                                <h2
+                                    class="text-lg sm:text-2xl lg:text-3xl font-bold tracking-tight leading-tight drop-shadow-sm truncate"
+                                    :style="{ color: form.title_color, fontFamily: form.title_font }"
+                                >
+                                    {{ form.title || 'Your Title Here' }}
+                                </h2>
+                                <p
+                                    class="text-xs sm:text-sm leading-tight drop-shadow-xs line-clamp-2 max-w-md"
+                                    :style="{ color: form.subtitle_color, fontFamily: form.subtitle_font }"
+                                >
+                                    {{ form.subtitle || 'Your subtitle text here' }}
+                                </p>
+                                <div class="mt-1">
+                                    <button
+                                        type="button"
+                                        class="inline-flex items-center gap-1.5 px-3.5 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs font-medium shadow-xs transition"
+                                        :style="buttonPreviewStyle"
+                                    >
+                                        <span>{{ form.button_text || 'Button' }}</span>
+                                        <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text-[10px] text-[#8A8B90] mt-2">This preview updates in real-time and reflects the actual storefront carousel appearance.</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <!-- LEFT COLUMN: TITLE, SUBTITLE & IMAGE -->
+                    <div class="space-y-4">
                         <div>
                             <label class="block text-xs font-medium text-[#8A8B90] mb-1.5">Title</label>
-                            <input v-model="form.title" type="text" class="w-full h-10 px-3 rounded-lg border border-[#E4E4E0] text-sm" />
+                            <input v-model="form.title" type="text" class="w-full h-10 px-3 rounded-lg border border-[#E4E4E0] text-sm focus:border-[#6D5EF8] focus:ring-0" />
                             <p v-if="form.errors.title" class="text-xs text-red-500 mt-1">{{ form.errors.title }}</p>
                         </div>
+
                         <div class="flex gap-2">
                             <div class="flex-1">
                                 <label class="block text-[10px] font-medium text-[#8A8B90] mb-1">Title Font</label>
@@ -250,8 +301,9 @@ const destroy = (banner) => {
 
                         <div>
                             <label class="block text-xs font-medium text-[#8A8B90] mb-1.5">Subtitle</label>
-                            <input v-model="form.subtitle" type="text" class="w-full h-10 px-3 rounded-lg border border-[#E4E4E0] text-sm" />
+                            <input v-model="form.subtitle" type="text" class="w-full h-10 px-3 rounded-lg border border-[#E4E4E0] text-sm focus:border-[#6D5EF8] focus:ring-0" />
                         </div>
+
                         <div class="flex gap-2">
                             <div class="flex-1">
                                 <label class="block text-[10px] font-medium text-[#8A8B90] mb-1">Subtitle Font</label>
@@ -265,14 +317,25 @@ const destroy = (banner) => {
                             </div>
                         </div>
 
+                        <div class="pt-2 border-t border-[#F0F0EC]">
+                            <label class="block text-xs font-medium text-[#8A8B90] mb-1.5">Image (exactly 1280x210px)</label>
+                            <input type="file" accept="image/*" @change="onImageSelected" class="text-sm block w-full text-slate-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-[#101114] file:text-white hover:file:opacity-90 cursor-pointer" />
+                            <p v-if="dimensionError" class="text-xs text-red-500 mt-1">{{ dimensionError }}</p>
+                            <p v-if="form.errors.image" class="text-xs text-red-500 mt-1">{{ form.errors.image }}</p>
+                        </div>
+                    </div>
+
+                    <!-- RIGHT COLUMN: BUTTON & FIELD REFERENCE -->
+                    <div class="space-y-4">
                         <div>
                             <label class="block text-xs font-medium text-[#8A8B90] mb-1.5">Button Text</label>
-                            <input v-model="form.button_text" type="text" class="w-full h-10 px-3 rounded-lg border border-[#E4E4E0] text-sm" />
+                            <input v-model="form.button_text" type="text" class="w-full h-10 px-3 rounded-lg border border-[#E4E4E0] text-sm focus:border-[#6D5EF8] focus:ring-0" />
                             <p v-if="form.errors.button_text" class="text-xs text-red-500 mt-1">{{ form.errors.button_text }}</p>
                         </div>
+
                         <div>
                             <label class="block text-xs font-medium text-[#8A8B90] mb-1.5">Button Redirect Link</label>
-                            <input v-model="form.button_link" type="text" placeholder="/search?category=shoes or https://..." class="w-full h-10 px-3 rounded-lg border border-[#E4E4E0] text-sm" />
+                            <input v-model="form.button_link" type="text" placeholder="/search?category=shoes or https://..." class="w-full h-10 px-3 rounded-lg border border-[#E4E4E0] text-sm focus:border-[#6D5EF8] focus:ring-0" />
                         </div>
 
                         <div class="flex gap-2">
@@ -291,9 +354,9 @@ const destroy = (banner) => {
                         <div>
                             <label class="block text-[10px] font-medium text-[#8A8B90] mb-1">Button Style</label>
                             <div class="flex gap-2">
-                                <button type="button" @click="form.button_style = 'fill'" class="flex-1 h-9 rounded-lg border text-xs" :class="form.button_style === 'fill' ? 'border-[#6D5EF8] text-[#6D5EF8]' : 'border-[#E4E4E0]'">Fill</button>
-                                <button type="button" @click="form.button_style = 'outline'" class="flex-1 h-9 rounded-lg border text-xs" :class="form.button_style === 'outline' ? 'border-[#6D5EF8] text-[#6D5EF8]' : 'border-[#E4E4E0]'">Outline</button>
-                                <button type="button" @click="form.button_style = 'gradient'" class="flex-1 h-9 rounded-lg border text-xs" :class="form.button_style === 'gradient' ? 'border-[#6D5EF8] text-[#6D5EF8]' : 'border-[#E4E4E0]'">Gradient</button>
+                                <button type="button" @click="form.button_style = 'fill'" class="flex-1 h-9 rounded-lg border text-xs font-medium transition" :class="form.button_style === 'fill' ? 'border-[#6D5EF8] bg-[#6D5EF8]/5 text-[#6D5EF8]' : 'border-[#E4E4E0] text-[#5F5E5A]'">Fill</button>
+                                <button type="button" @click="form.button_style = 'outline'" class="flex-1 h-9 rounded-lg border text-xs font-medium transition" :class="form.button_style === 'outline' ? 'border-[#6D5EF8] bg-[#6D5EF8]/5 text-[#6D5EF8]' : 'border-[#E4E4E0] text-[#5F5E5A]'">Outline</button>
+                                <button type="button" @click="form.button_style = 'gradient'" class="flex-1 h-9 rounded-lg border text-xs font-medium transition" :class="form.button_style === 'gradient' ? 'border-[#6D5EF8] bg-[#6D5EF8]/5 text-[#6D5EF8]' : 'border-[#E4E4E0] text-[#5F5E5A]'">Gradient</button>
                             </div>
                         </div>
 
@@ -311,34 +374,28 @@ const destroy = (banner) => {
                             </div>
                         </div>
 
-                        <div>
-                            <label class="block text-xs font-medium text-[#8A8B90] mb-1.5">Image (exactly 1280x210px)</label>
-                            <input type="file" accept="image/*" @change="onImageSelected" class="text-sm" />
-                            <p v-if="dimensionError" class="text-xs text-red-500 mt-1">{{ dimensionError }}</p>
-                            <p v-if="form.errors.image" class="text-xs text-red-500 mt-1">{{ form.errors.image }}</p>
+                        <!-- Guide Diagram -->
+                        <div class="rounded-lg border border-dashed border-[#D8D8D3] bg-[#FAFAF8] p-2.5">
+                            <p class="text-[10px] font-medium text-[#8A8B90] mb-1.5">Where each field appears on the banner:</p>
+                            <svg viewBox="0 0 400 66" class="w-full h-auto">
+                                <rect x="1" y="1" width="398" height="64" rx="6" fill="#EEEEEC" stroke="#D8D8D3" />
+                                <rect x="14" y="12" width="140" height="10" rx="2" fill="#B9B9F5" />
+                                <text x="18" y="20" font-size="7" fill="#4B3FBF">Title</text>
+                                <rect x="14" y="28" width="110" height="7" rx="2" fill="#CFCFCF" />
+                                <text x="18" y="34" font-size="6" fill="#777">Subtitle</text>
+                                <rect x="14" y="42" width="56" height="14" rx="7" fill="#101114" />
+                                <text x="24" y="52" font-size="7" fill="white">Button</text>
+                                <rect x="280" y="8" width="108" height="50" rx="4" fill="none" stroke="#A78BFA" stroke-dasharray="4 2" />
+                                <text x="292" y="36" font-size="7" fill="#7C3AED">Image (full banner)</text>
+                            </svg>
                         </div>
-                    </div>
-
-                    <div>
-                        <label class="block text-[10px] font-medium text-[#8A8B90] mb-1.5">Live Preview</label>
-                        <div class="relative rounded-xl overflow-hidden border border-[#E4E4E0] bg-[#EEEEEC]" style="aspect-ratio: 1280 / 210;">
-                            <img v-if="imagePreview" :src="imagePreview" class="absolute inset-0 w-full h-full object-cover" />
-                            <div class="absolute inset-0 flex flex-col justify-center gap-1.5 px-6">
-                                <p class="text-base font-bold leading-tight" :style="{ color: form.title_color, fontFamily: form.title_font }">{{ form.title || 'Your Title Here' }}</p>
-                                <p class="text-xs leading-tight" :style="{ color: form.subtitle_color, fontFamily: form.subtitle_font }">{{ form.subtitle || 'Your subtitle text here' }}</p>
-                                <button type="button" class="mt-1 w-fit px-3 py-1.5 rounded-lg text-[10px] font-medium" :style="buttonPreviewStyle">
-                                    {{ form.button_text || 'Button' }}
-                                </button>
-                            </div>
-                        </div>
-                        <p class="text-[10px] text-[#8A8B90] mt-2">This preview approximates how the banner will look on the storefront carousel.</p>
                     </div>
                 </div>
 
-                <div class="flex gap-2 mt-6">
-                    <button @click="showForm = false" class="flex-1 h-10 rounded-lg border border-[#E4E4E0] text-sm">Cancel</button>
-                    <button @click="submit" :disabled="form.processing || !!dimensionError" class="flex-1 h-10 rounded-lg bg-[#101114] text-white text-sm disabled:opacity-40">
-                        {{ form.processing ? 'Saving…' : 'Save' }}
+                <div class="flex gap-3 mt-6 pt-4 border-t border-[#EAEAE5]">
+                    <button type="button" @click="showForm = false" class="flex-1 h-10 rounded-xl border border-[#E4E4E0] text-sm font-semibold text-[#5F5E5A] hover:bg-[#F4F4F2] transition">Cancel</button>
+                    <button type="button" @click="submit" :disabled="form.processing || !!dimensionError" class="flex-1 h-10 rounded-xl bg-[#101114] text-white text-sm font-semibold hover:bg-black transition disabled:opacity-40">
+                        {{ form.processing ? 'Saving…' : 'Save Banner' }}
                     </button>
                 </div>
             </div>
