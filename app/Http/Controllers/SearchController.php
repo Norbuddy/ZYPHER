@@ -17,6 +17,7 @@ class SearchController extends Controller
      */
     public function index(Request $request): Response
     {
+        $query = trim((string) $request->string('q', ''));
         $categoryParam = $request->input('category_id');
         $categoryId = is_numeric($categoryParam) ? (int) $categoryParam : null;
         $categorySlug = (!is_numeric($categoryParam) && !empty($categoryParam)) ? (string) $categoryParam : null;

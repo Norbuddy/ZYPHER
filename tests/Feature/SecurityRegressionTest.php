@@ -190,4 +190,17 @@ class SecurityRegressionTest extends TestCase
         $response->assertSessionHasNoErrors();
         $this->assertEquals('active', $branch->fresh()->status);
     }
+
+    /**
+     * Search Test:
+     * Search endpoint with category_id or shoes filter succeeds without server error.
+     */
+    public function test_search_endpoint_with_category_id_param_succeeds(): void
+    {
+        $response = $this->get('/search?category_id=shoes');
+        $response->assertOk();
+
+        $response2 = $this->get('/search?q=test&category_id=shoes');
+        $response2->assertOk();
+    }
 }
