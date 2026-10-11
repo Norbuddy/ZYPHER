@@ -1,7 +1,7 @@
 <script setup>
 import GuestLayout from '@/Layouts/GuestLayout.vue';
 import { Head, Link, useForm, usePage, router } from '@inertiajs/vue3';
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
 import DialogModal from '@/Components/DialogModal.vue';
 import ActionMessage from '@/Components/ActionMessage.vue';
 
@@ -90,7 +90,7 @@ const imageUrl = (img) => {
     if (!img) return '';
     const path = typeof img === 'string' ? img : img.path;
     if (!path) return '';
-    return (path.startsWith('images/') || path.startsWith('http') ? (path.startsWith('http') ? path : '/' + path) : '/storage/' + path);
+    return (path.startsWith('images/') || path.startsWith('videos/') || path.startsWith('http') ? (path.startsWith('http') ? path : '/' + path) : '/storage/' + path);
 };
 
 const shopLogoUrl = (team) => {
@@ -247,6 +247,40 @@ const formatReviewDate = (dateStr) => {
         return dateStr;
     }
 };
+
+// Fullscreen review media modal (Images & Videos)
+const activeMedia = ref(null);
+
+const openFullscreenMedia = (media) => {
+    activeMedia.value = media;
+    if (typeof document !== 'undefined') {
+        document.body.style.overflow = 'hidden';
+    }
+};
+
+const closeFullscreenMedia = () => {
+    activeMedia.value = null;
+    if (typeof document !== 'undefined') {
+        document.body.style.overflow = '';
+    }
+};
+
+const handleReviewKeyDown = (e) => {
+    if (e.key === 'Escape' && activeMedia.value) {
+        closeFullscreenMedia();
+    }
+};
+
+onMounted(() => {
+    window.addEventListener('keydown', handleReviewKeyDown);
+});
+
+onUnmounted(() => {
+    window.removeEventListener('keydown', handleReviewKeyDown);
+    if (typeof document !== 'undefined') {
+        document.body.style.overflow = '';
+    }
+});
 </script>
 
 <template>
@@ -641,30 +675,59 @@ const formatReviewDate = (dateStr) => {
                             {{ rev.comment || 'Maganda ang product at de-kalidad ang tela!' }}
                         </p>
 
-                        <!-- Attached Images -->
-                        <div v-if="rev.image_paths && rev.image_paths.length > 0" class="flex gap-2 pt-1 flex-wrap">
-                            <img
-                                v-for="(img, idx) in rev.image_paths"
-                                :key="idx"
-                                :src="imageUrl(img)"
-                                class="w-14 h-14 rounded-xl object-cover border border-[#EAEAE5]"
-                            />
+                        <!-- Attached Media (Images & Videos with Fullscreen Trigger) -->
+                        <div v-if="(rev.image_paths && rev.image_paths.length > 0) || rev.video_path" class="flex gap-2.5 pt-1 flex-wrap items-center">
+                            <!-- Review Images -->
+                            <div
+                                v-for="(img, idx) in (rev.image_paths || [])"
+                                :key="'img-' + idx"
+                                @click="openFullscreenMedia({ type: 'image', url: imageUrl(img), title: (rev.user?.name ? rev.user.name + '\'s Review Photo' : 'Review Photo') })"
+                                class="relative w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden border border-[#EAEAE5] cursor-pointer group shadow-2xs hover:shadow-md transition-all"
+                                title="Click to view full screen"
+                            >
+                                <img
+                                    :src="imageUrl(img)"
+                                    class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
+                                    loading="lazy"
+                                />
+                                <div class="absolute inset-0 bg-black/0 group-hover:bg-black/25 flex items-center justify-center transition-colors">
+                                    <svg class="w-5 h-5 text-white opacity-0 group-hover:opacity-100 transition-opacity drop-shadow-md" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v6m3-3H7" />
+                                    </svg>
+                                </div>
+                            </div>
+
+                            <!-- Review Video -->
+                            <div
+                                v-if="rev.video_path"
+                                @click="openFullscreenMedia({ type: 'video', url: imageUrl(rev.video_path), title: (rev.user?.name ? rev.user.name + '\'s Review Video' : 'Review Video') })"
+                                class="relative w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden border border-[#EAEAE5] bg-[#101114] cursor-pointer group shadow-2xs hover:shadow-md transition-all flex items-center justify-center"
+                                title="Click to play in full screen"
+                            >
+                                <video
+                                    :src="imageUrl(rev.video_path)"
+                                    class="w-full h-full object-cover opacity-60 group-hover:opacity-80 transition-opacity"
+                                    preload="metadata"
+                                    muted
+                                ></video>
+                                <div class="absolute z-10 w-7 h-7 rounded-full bg-white/95 text-[#101114] flex items-center justify-center shadow-md group-hover:scale-110 transition-transform">
+                                    <svg class="w-3.5 h-3.5 ml-0.5" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M8 5v14l11-7z" />
+                                    </svg>
+                                </div>
+                                <span class="absolute bottom-1 right-1 px-1.5 py-0.5 bg-black/80 text-white text-[9px] font-semibold rounded">
+                                    Video
+                                </span>
+                            </div>
                         </div>
 
-                        <!-- Helpful / Reply actions matching mockup -->
+                        <!-- Helpful action (Reply removed) -->
                         <div class="flex items-center gap-4 pt-1 text-xs text-[#8A8B90]">
                             <button type="button" class="flex items-center gap-1.5 hover:text-[#101114] transition-colors">
                                 <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5" />
                                 </svg>
                                 <span>Helpful ({{ rev.helpful_count || 1 }})</span>
-                            </button>
-                            <span>|</span>
-                            <button type="button" class="flex items-center gap-1.5 hover:text-[#101114] transition-colors">
-                                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                                </svg>
-                                <span>Reply</span>
                             </button>
                         </div>
                     </div>
@@ -794,5 +857,66 @@ const formatReviewDate = (dateStr) => {
                 </button>
             </template>
         </DialogModal>
+
+        <!-- FULLSCREEN REVIEW MEDIA LIGHTBOX MODAL -->
+        <Teleport to="body">
+            <transition
+                enter-active-class="transition duration-200 ease-out"
+                enter-from-class="opacity-0 scale-95"
+                enter-to-class="opacity-100 scale-100"
+                leave-active-class="transition duration-150 ease-in"
+                leave-from-class="opacity-100 scale-100"
+                leave-to-class="opacity-0 scale-95"
+            >
+                <div
+                    v-if="activeMedia"
+                    class="fixed inset-0 z-[999] bg-black/90 backdrop-blur-md flex flex-col items-center justify-center p-4 sm:p-6"
+                    @click.self="closeFullscreenMedia"
+                >
+                    <!-- Header -->
+                    <div class="absolute top-4 left-4 right-4 flex items-center justify-between text-white z-20">
+                        <div class="flex items-center gap-2.5">
+                            <span class="text-xs sm:text-sm font-semibold tracking-wide text-white">{{ activeMedia.title }}</span>
+                            <span class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-white/15 text-white/90">
+                                {{ activeMedia.type === 'video' ? 'Video Review' : 'Photo Review' }}
+                            </span>
+                        </div>
+                        <button
+                            type="button"
+                            @click="closeFullscreenMedia"
+                            class="w-9 h-9 rounded-full bg-white/10 hover:bg-white/25 text-white flex items-center justify-center transition cursor-pointer"
+                            aria-label="Close"
+                        >
+                            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                    </div>
+
+                    <!-- Media Presentation -->
+                    <div class="relative max-w-5xl max-h-[85vh] w-full flex items-center justify-center my-auto p-2">
+                        <img
+                            v-if="activeMedia.type === 'image'"
+                            :src="activeMedia.url"
+                            :alt="activeMedia.title"
+                            class="max-h-[80vh] max-w-[90vw] object-contain rounded-2xl shadow-2xl select-none"
+                        />
+                        <video
+                            v-else-if="activeMedia.type === 'video'"
+                            :src="activeMedia.url"
+                            controls
+                            autoplay
+                            playsinline
+                            class="max-h-[80vh] max-w-[90vw] rounded-2xl shadow-2xl bg-black"
+                        ></video>
+                    </div>
+
+                    <!-- Dismiss Hint -->
+                    <p class="absolute bottom-4 text-center text-xs text-white/50">
+                        Click outside or press Esc to close
+                    </p>
+                </div>
+            </transition>
+        </Teleport>
     </GuestLayout>
 </template>
