@@ -119,7 +119,12 @@ const logout = () => {
                                 <Dropdown align="right" width="48">
                                     <template #trigger>
                                         <button v-if="$page.props.jetstream.managesProfilePhotos" class="flex text-sm border-2 border-transparent rounded-full focus:outline-none focus:border-gray-300 transition">
-                                            <img class="size-8 rounded-full object-cover" :src="$page.props.auth.user.profile_photo_url" :alt="$page.props.auth.user.name">
+                                            <img
+                                                class="size-8 rounded-full object-cover"
+                                                :src="$page.props.auth.user.profile_photo_url"
+                                                :alt="$page.props.auth.user.name"
+                                                @error="$event.target.src = 'https://ui-avatars.com/api/?name=' + encodeURIComponent($page.props.auth.user.name) + '&color=7F9CF5&background=EBF4FF'"
+                                            >
                                         </button>
 
                                         <span v-else class="inline-flex rounded-md">
@@ -210,7 +215,12 @@ const logout = () => {
                     <div class="pt-4 pb-1 border-t border-gray-200">
                         <div class="flex items-center px-4">
                             <div v-if="$page.props.jetstream.managesProfilePhotos" class="shrink-0 me-3">
-                                <img class="size-10 rounded-full object-cover" :src="$page.props.auth.user.profile_photo_url" :alt="$page.props.auth.user.name">
+                                <img
+                                    class="size-10 rounded-full object-cover"
+                                    :src="$page.props.auth.user.profile_photo_url"
+                                    :alt="$page.props.auth.user.name"
+                                    @error="$event.target.src = 'https://ui-avatars.com/api/?name=' + encodeURIComponent($page.props.auth.user.name) + '&color=7F9CF5&background=EBF4FF'"
+                                >
                             </div>
 
                             <div>

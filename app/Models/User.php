@@ -12,6 +12,8 @@ use Laravel\Jetstream\HasProfilePhoto;
 use Laravel\Jetstream\HasTeams;
 use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Support\Facades\Storage;
 
 class User extends Authenticatable
 {
@@ -146,5 +148,33 @@ class User extends Authenticatable
     public function searchHistories(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
         return $this->hasMany(SearchHistory::class);
+    }
+
+    /**
+     * Get the URL to the user's profile photo with resilient fallback protection.
+     */
+    protected function profilePhotoUrl(): Attribute
+    {
+        return Attribute::get(function (): string {
+            if ($this->profile_photo_path) {
+                if (filter_var($this->profile_photo_path, FILTER_VALIDATE_URL)) {
+                    return $this->profile_photo_path;
+                }
+
+                try {
+                    $disk = $this->profilePhotoDisk();
+                    if (Storage::disk($disk)->exists($this->profile_photo_path)) {
+                        if (app()->runningInConsole() || !request()->hasHeader('Host')) {
+                            return Storage::disk($disk)->url($this->profile_photo_path);
+                        }
+                        return url('/storage/' . ltrim($this->profile_photo_path, '/'));
+                    }
+                } catch (\Throwable $e) {
+                    // Fall back to default avatar
+                }
+            }
+
+            return $this->defaultProfilePhotoUrl();
+        });
     }
 }

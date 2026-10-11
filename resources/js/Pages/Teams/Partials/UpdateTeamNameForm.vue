@@ -40,7 +40,12 @@ const updateTeamName = () => {
                 <InputLabel value="Team Owner" />
 
                 <div class="flex items-center mt-2">
-                    <img class="size-12 rounded-full object-cover" :src="team.owner.profile_photo_url" :alt="team.owner.name">
+                    <img
+                        class="size-12 rounded-full object-cover"
+                        :src="team.owner.profile_photo_url"
+                        :alt="team.owner.name"
+                        @error="$event.target.src = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(team.owner.name) + '&color=7F9CF5&background=EBF4FF'"
+                    >
 
                     <div class="ms-4 leading-tight">
                         <div class="text-gray-900">{{ team.owner.name }}</div>

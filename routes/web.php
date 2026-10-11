@@ -182,3 +182,12 @@ Route::get('/__paymongo-check', function () {
     ]);
 });
 
+// Storage file serving fallback (ensures public assets load reliably even if symlink is broken on container deploy)
+Route::get('/storage/{path}', function (string $path) {
+    if (\Illuminate\Support\Facades\Storage::disk('public')->exists($path)) {
+        return \Illuminate\Support\Facades\Storage::disk('public')->response($path);
+    }
+    abort(404);
+})->where('path', '.*')->name('storage.fallback');
+
+

@@ -28,7 +28,7 @@ const acceptPolicy = () => {
 
 const submit = () => {
     if (!form.terms) {
-        termsError.value = 'Kailangang basahin at lagyan ng check ang Terms and Privacy Policy bago lumikha ng account.';
+        termsError.value = 'Please read and agree to the Terms of Service and Privacy Policy before creating an account.';
         return;
     }
     termsError.value = '';
@@ -143,11 +143,11 @@ const submit = () => {
                                 @change="termsError = ''"
                             />
                             <span class="text-xs text-[#5F5E5A] leading-relaxed">
-                                Nabasa at sumasang-ayon ako sa 
+                                I have read and agree to the 
                                 <button type="button" @click.prevent="openPolicy('terms')" class="text-[#6D5EF8] font-semibold underline hover:text-[#101114]">Terms of Service</button> 
-                                at 
+                                and 
                                 <button type="button" @click.prevent="openPolicy('policy')" class="text-[#6D5EF8] font-semibold underline hover:text-[#101114]">Privacy Policy</button> 
-                                ng Zypher Marketplace.
+                                of Zypher Marketplace.
                             </span>
                         </label>
                         <p v-if="termsError" class="mt-1.5 text-xs text-[#D85A30] font-medium">{{ termsError }}</p>

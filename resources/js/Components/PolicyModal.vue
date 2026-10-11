@@ -48,28 +48,28 @@ const emit = defineEmits(['close', 'accept']);
                     </p>
 
                     <div>
-                        <h4 class="font-bold text-[#101114] mb-1">1. Pagtanggap sa Kasunduan (Agreement to Terms)</h4>
-                        <p>Sa pamamagitan ng pag-login, pag-register, o paggamit sa Zypher Marketplace, sumasang-ayon ka sa mga patakaran, safety guidelines, at legal terms ng system.</p>
+                        <h4 class="font-bold text-[#101114] mb-1">1. Agreement to Terms</h4>
+                        <p>By signing in, registering, or using Zypher Marketplace, you agree to comply with and be bound by all platform terms, safety guidelines, and policies.</p>
                     </div>
 
                     <div>
-                        <h4 class="font-bold text-[#101114] mb-1">2. Responsibilidad sa Account (Account Responsibilities)</h4>
-                        <p>Ikaw ang may buong pananagutan sa pagpapanatiling ligtas ng iyong email at password. Ang anumang order o transaksyon gamit ang iyong account ay ituturing na opisyal at pinahintulutan mo.</p>
+                        <h4 class="font-bold text-[#101114] mb-1">2. Account Responsibilities</h4>
+                        <p>You are solely responsible for maintaining the confidentiality of your account credentials. All orders and activities conducted under your account are deemed authorized by you.</p>
                     </div>
 
                     <div>
-                        <h4 class="font-bold text-[#101114] mb-1">3. Transaksyon at Pagbabayad (Orders & Payments)</h4>
-                        <p>Lahat ng presyo ay nakasaad sa Philippine Peso (PHP ₱). Suportado ng system ang secure electronic payments (GCash, GrabPay, Cards via PayMongo) at Cash on Delivery (COD).</p>
+                        <h4 class="font-bold text-[#101114] mb-1">3. Orders & Payments</h4>
+                        <p>All prices are quoted in Philippine Peso (PHP ₱). Zypher supports secure electronic payments (GCash, GrabPay, Credit/Debit cards via PayMongo) as well as Cash on Delivery (COD).</p>
                     </div>
 
                     <div>
-                        <h4 class="font-bold text-[#101114] mb-1">4. Proteksyon sa Mamimili (Buyer & Seller Protection)</h4>
-                        <p>Ipinagbabawal ang mga pekeng produkto at panlilinlang. Ang bawat mamimili ay may karapatang mag-request ng return o refund sakaling may depekto ang natanggap na produkto.</p>
+                        <h4 class="font-bold text-[#101114] mb-1">4. Buyer & Seller Protection</h4>
+                        <p>Counterfeit products and deceptive practices are strictly prohibited. Buyers have the right to request a return or refund in accordance with our return guidelines.</p>
                     </div>
 
                     <div>
-                        <h4 class="font-bold text-[#101114] mb-1">5. Pagkansela at Pagwawakas (Termination)</h4>
-                        <p>May karapatan ang Zypher na i-suspend o tanggalin ang sinumang lumalabag sa mga patakarang ito upang mapanatiling ligtas ang komunidad.</p>
+                        <h4 class="font-bold text-[#101114] mb-1">5. Termination & Suspension</h4>
+                        <p>Zypher reserves the right to suspend or terminate accounts that violate platform policies to ensure a safe and trustworthy community for all users.</p>
                     </div>
                 </div>
 
@@ -80,23 +80,23 @@ const emit = defineEmits(['close', 'accept']);
                     </p>
 
                     <div>
-                        <h4 class="font-bold text-[#101114] mb-1">1. Impormasyong Kinokolekta (Data Collected)</h4>
-                        <p>Kinokolekta lamang ng Zypher ang kinakailangang impormasyon gaya ng pangalan, email, contact number, at delivery address para sa pagproseso ng mga order.</p>
+                        <h4 class="font-bold text-[#101114] mb-1">1. Information We Collect</h4>
+                        <p>Zypher collects necessary account details including your name, email, contact telephone number, and delivery addresses required to fulfill orders.</p>
                     </div>
 
                     <div>
-                        <h4 class="font-bold text-[#101114] mb-1">2. Paggamit ng Impormasyon (Use of Information)</h4>
-                        <p>Ginagamit ang iyong datos upang maipadala nang maayos ang iyong mga binili, maprotektahan ang iyong session, at maiwasan ang mga panloloko sa system.</p>
+                        <h4 class="font-bold text-[#101114] mb-1">2. Use of Information</h4>
+                        <p>Your data is used solely to process orders, coordinate package deliveries with verified logistics partners, maintain account security, and prevent fraud.</p>
                     </div>
 
                     <div>
-                        <h4 class="font-bold text-[#101114] mb-1">3. Seguridad at Encryption (Security Measures)</h4>
-                        <p>Naka-encrypt (TLS/HTTPS) at protektado ang lahat ng sensitibong impormasyon. Hindi kailanman ibinebenta ang iyong personal na impormasyon sa mga third-party advertiser.</p>
+                        <h4 class="font-bold text-[#101114] mb-1">3. Security & Data Protection</h4>
+                        <p>All data transmissions are encrypted using TLS/HTTPS. We never sell, rent, or trade your personal information to third-party advertisers.</p>
                     </div>
 
                     <div>
-                        <h4 class="font-bold text-[#101114] mb-1">4. Iyong mga Karapatan (User Rights)</h4>
-                        <p>Maaari mong baguhin o i-update ang iyong personal data anumang oras sa pamamagitan ng Profile Settings o makipag-ugnayan sa Zypher Support.</p>
+                        <h4 class="font-bold text-[#101114] mb-1">4. User Rights</h4>
+                        <p>You may review, update, or edit your personal data at any time through your Profile Settings or by reaching out to Zypher Support.</p>
                     </div>
                 </div>
             </div>
@@ -107,16 +107,16 @@ const emit = defineEmits(['close', 'accept']);
                 <button
                     type="button"
                     @click="emit('close')"
-                    class="px-4 py-2 rounded-xl border border-[#E4E4E0] text-xs font-semibold text-[#5F5E5A] hover:bg-[#F7F7F5] transition"
+                    class="px-4 py-2 rounded-xl border border-[#E4E4E0] text-xs font-semibold text-[#5F5E5A] hover:bg-[#F7F7F5] transition cursor-pointer"
                 >
-                    Isara (Close)
+                    Close
                 </button>
                 <button
                     type="button"
                     @click="emit('accept'); emit('close');"
-                    class="px-5 py-2 rounded-xl bg-[#101114] hover:bg-black text-white text-xs font-bold transition shadow-sm"
+                    class="px-5 py-2 rounded-xl bg-[#101114] hover:bg-black text-white text-xs font-bold transition shadow-sm cursor-pointer"
                 >
-                    Naiintindihan at Sumasang-ayon Ako
+                    I Understand & Agree
                 </button>
             </div>
         </template>

@@ -31,12 +31,12 @@ if (! $user->currentTeam) {
 
         $user = $supplierApplication->user;
 
-        // Gawing supplier ang user
+        // Mark the user as supplier
         $user->update([
             'is_supplier' => true,
         ]);
 
-        // Gumawa lang ng Supplier record kung wala pa
+        // Create Supplier record only if one does not exist yet
         if (!Supplier::where('team_id', $user->currentTeam?->id)->exists()) {
 
             Supplier::create([

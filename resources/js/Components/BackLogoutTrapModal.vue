@@ -52,17 +52,17 @@ const confirmLogout = () => {
                 <div class="w-8 h-8 rounded-xl bg-rose-50 flex items-center justify-center font-bold text-base">
                     ⚠️
                 </div>
-                <span class="text-base font-bold text-[#101114]">Gusto mo bang mag-log out?</span>
+                <span class="text-base font-bold text-[#101114]">Do you want to log out?</span>
             </div>
         </template>
 
         <template #content>
             <div class="space-y-3 text-xs sm:text-sm text-[#5F5E5A] leading-relaxed">
                 <p>
-                    Pinindot mo ang <strong>browser back button</strong> habang naka-login ang iyong account.
+                    You pressed the <strong>browser back button</strong> while signed in to your account.
                 </p>
                 <p class="p-3 rounded-xl bg-amber-50 border border-amber-200/60 text-amber-900 text-xs">
-                    💡 <em>Paalala:</em> Upang maiwasan ang session mismatch at page errors, manatili po sa kasalukuyang pahina o i-confirm kung nais mo nang mag-log out.
+                    💡 <em>Notice:</em> To prevent session desynchronization and unexpected page errors, please stay on the current page or confirm if you wish to log out.
                 </p>
             </div>
         </template>
@@ -74,14 +74,14 @@ const confirmLogout = () => {
                     @click="stayOnPage"
                     class="px-4 py-2.5 rounded-xl border border-[#E4E4E0] hover:bg-[#F7F7F5] text-xs font-semibold text-[#101114] transition cursor-pointer"
                 >
-                    Manatili (Stay on Page)
+                    Stay on Page
                 </button>
                 <button
                     type="button"
                     @click="confirmLogout"
                     class="px-4 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold transition shadow-sm cursor-pointer"
                 >
-                    Oo, Mag-Log Out
+                    Yes, Log Out
                 </button>
             </div>
         </template>

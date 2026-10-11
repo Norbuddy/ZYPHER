@@ -27,6 +27,7 @@ const applicationItems = [
 ];
 
 const isActive = (routeName) => route().current(routeName + '*');
+const avatarError = ref(false);
 
 const logout = () => {
     router.post(route('logout'));
@@ -118,10 +119,11 @@ router.on('navigate', () => {
                 <div class="flex items-center gap-2.5 p-2 rounded-xl bg-white/5 border border-white/5">
                     <div class="w-8 h-8 rounded-full bg-white text-[#0B0D11] flex items-center justify-center text-xs font-bold shrink-0 overflow-hidden">
                         <img
-                            v-if="user?.profile_photo_url"
+                            v-if="user?.profile_photo_url && !avatarError"
                             :src="user.profile_photo_url"
                             :alt="user.name"
                             class="w-full h-full object-cover"
+                            @error="avatarError = true"
                         />
                         <span v-else>{{ user?.name?.charAt(0) || 'A' }}</span>
                     </div>

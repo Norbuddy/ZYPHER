@@ -2,7 +2,7 @@
 import { ref, computed } from 'vue';
 
 const props = defineProps({
-    tableId: { type: String, required: true }, // unique key para sa column visibility persistence
+    tableId: { type: String, required: true }, // unique key for column visibility persistence
     columns: { type: Array, required: true }, // [{ key, label, sortable = true, visible = true }]
     rows: { type: Array, required: true },
     searchKeys: { type: Array, default: () => [] }, // which row fields to search

@@ -24,15 +24,69 @@ const verificationLinkSent = ref(null);
 const photoPreview = ref(null);
 const photoInput = ref(null);
 
+const compressImage = (file, maxDimension = 600, quality = 0.85) => {
+    return new Promise((resolve) => {
+        if (!file || !file.type.startsWith('image/')) {
+            resolve({ file, dataUrl: null });
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const img = new Image();
+            img.onload = () => {
+                let width = img.width;
+                let height = img.height;
+
+                if (width > maxDimension || height > maxDimension) {
+                    if (width > height) {
+                        height = Math.round((height * maxDimension) / width);
+                        width = maxDimension;
+                    } else {
+                        width = Math.round((width * maxDimension) / height);
+                        height = maxDimension;
+                    }
+                }
+
+                const canvas = document.createElement('canvas');
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, width, height);
+
+                canvas.toBlob((blob) => {
+                    if (!blob) {
+                        resolve({ file, dataUrl: e.target.result });
+                        return;
+                    }
+                    const compressedFile = new File(
+                        [blob],
+                        (file.name || 'avatar').replace(/\.[^/.]+$/, '') + '.jpg',
+                        { type: 'image/jpeg', lastModified: Date.now() }
+                    );
+                    resolve({ file: compressedFile, dataUrl: canvas.toDataURL('image/jpeg', quality) });
+                }, 'image/jpeg', quality);
+            };
+            img.onerror = () => resolve({ file, dataUrl: e.target.result });
+            img.src = e.target.result;
+        };
+        reader.onerror = () => resolve({ file, dataUrl: null });
+        reader.readAsDataURL(file);
+    });
+};
+
 const updateProfileInformation = () => {
-    if (photoInput.value) {
+    if (!form.photo && photoInput.value?.files?.[0]) {
         form.photo = photoInput.value.files[0];
     }
 
     form.post(route('user-profile-information.update'), {
         errorBag: 'updateProfileInformation',
         preserveScroll: true,
-        onSuccess: () => clearPhotoFileInput(),
+        onSuccess: () => {
+            clearPhotoFileInput();
+            form.photo = null;
+        },
     });
 };
 
@@ -44,18 +98,14 @@ const selectNewPhoto = () => {
     photoInput.value.click();
 };
 
-const updatePhotoPreview = () => {
-    const photo = photoInput.value.files[0];
+const updatePhotoPreview = async () => {
+    const photo = photoInput.value?.files?.[0];
 
-    if (! photo) return;
+    if (!photo) return;
 
-    const reader = new FileReader();
-
-    reader.onload = (e) => {
-        photoPreview.value = e.target.result;
-    };
-
-    reader.readAsDataURL(photo);
+    const { file: compressedFile, dataUrl } = await compressImage(photo, 600, 0.85);
+    form.photo = compressedFile;
+    photoPreview.value = dataUrl;
 };
 
 const deletePhoto = () => {
@@ -63,6 +113,7 @@ const deletePhoto = () => {
         preserveScroll: true,
         onSuccess: () => {
             photoPreview.value = null;
+            form.photo = null;
             clearPhotoFileInput();
         },
     });
@@ -93,6 +144,7 @@ const clearPhotoFileInput = () => {
                     id="photo"
                     ref="photoInput"
                     type="file"
+                    accept="image/*"
                     class="hidden"
                     @change="updatePhotoPreview"
                 >
@@ -101,7 +153,12 @@ const clearPhotoFileInput = () => {
 
                 <!-- Current Profile Photo -->
                 <div v-show="! photoPreview" class="mt-2">
-                    <img :src="user.profile_photo_url" :alt="user.name" class="rounded-full size-20 object-cover">
+                    <img
+                        :src="user.profile_photo_url"
+                        :alt="user.name"
+                        class="rounded-full size-20 object-cover"
+                        @error="$event.target.src = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(user.name) + '&color=7F9CF5&background=EBF4FF'"
+                    >
                 </div>
 
                 <!-- New Profile Photo Preview -->

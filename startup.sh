@@ -10,6 +10,7 @@ fi
 mkdir -p /home/site/wwwroot/storage/framework/sessions
 mkdir -p /home/site/wwwroot/storage/framework/views
 mkdir -p /home/site/wwwroot/storage/framework/cache
+mkdir -p /home/site/wwwroot/storage/app/public/profile-photos
 chmod -R 777 /home/site/wwwroot/storage
 chmod -R 777 /home/site/wwwroot/bootstrap/cache
 

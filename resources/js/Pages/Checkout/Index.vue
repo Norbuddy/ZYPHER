@@ -88,7 +88,7 @@ const submit = () => {
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
                 </svg>
                 <div>
-                    <span class="font-bold">Direct Buy Now:</span> Ang pagbiling ito ay direct checkout — hindi ginagalaw o binabago ang mga items sa iyong regular shopping cart.
+                    <span class="font-bold">Direct Buy Now:</span> This purchase is a direct checkout — items in your regular shopping cart will not be modified.
                 </div>
             </div>
 

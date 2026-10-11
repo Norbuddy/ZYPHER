@@ -570,7 +570,7 @@ onUnmounted(() => {
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
                                 </svg>
                                 <div>
-                                    <span class="font-bold">Sold Out:</span> Kasalukuyang out of stock ang produktong ito.
+                                    <span class="font-bold">Sold Out:</span> This product is currently out of stock.
                                 </div>
                             </div>
                         </transition>
@@ -766,7 +766,7 @@ onUnmounted(() => {
                         </div>
                         <div>
                             <h3 class="text-sm sm:text-base font-bold text-[#101114]">Successfully Added to Cart!</h3>
-                            <p class="text-xs text-[#8A8B90]">Nalagay na po ang item sa iyong shopping cart.</p>
+                            <p class="text-xs text-[#8A8B90]">The item has been added to your shopping cart.</p>
                         </div>
                     </div>
 
@@ -838,7 +838,7 @@ onUnmounted(() => {
                             v-model="messageForm.body"
                             rows="4"
                             class="w-full rounded-xl border border-[#E4E4E0] p-3 text-xs text-[#101114] focus:border-[#101114] focus:ring-0 outline-none"
-                            placeholder="Kumusta po, available pa po ba ito?..."
+                            placeholder="Hello, is this item still available?..."
                         ></textarea>
                         <p v-if="messageForm.errors.body" class="text-xs text-rose-600 mt-1">{{ messageForm.errors.body }}</p>
                     </div>

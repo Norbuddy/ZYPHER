@@ -15,6 +15,8 @@ const searchQuery = ref('');
 const menuOpen = ref(false); // Desktop avatar dropdown
 const mobileMenuOpen = ref(false); // Mobile hamburger drawer
 const mobileSearchOpen = ref(false); // Mobile search bar toggle
+const avatarError = ref(false);
+const mobileAvatarError = ref(false);
 
 const searchOpen = ref(false);
 const searchLoading = ref(false);
@@ -265,10 +267,11 @@ const logout = () => {
                                     aria-label="User menu"
                                 >
                                     <img
-                                        v-if="user.profile_photo_url"
+                                        v-if="user.profile_photo_url && !avatarError"
                                         :src="user.profile_photo_url"
                                         :alt="user.name"
                                         class="w-full h-full object-cover"
+                                        @error="avatarError = true"
                                     />
                                     <span v-else>{{ user.name?.charAt(0) }}</span>
                                 </button>
@@ -473,10 +476,11 @@ const logout = () => {
                     <div v-if="user" class="p-3.5 rounded-2xl bg-white/5 border border-white/10 flex items-center gap-3">
                         <div class="w-11 h-11 rounded-full bg-[#6D5EF8] text-white flex items-center justify-center font-bold text-sm shrink-0 overflow-hidden">
                             <img
-                                v-if="user.profile_photo_url"
+                                v-if="user.profile_photo_url && !mobileAvatarError"
                                 :src="user.profile_photo_url"
                                 :alt="user.name"
                                 class="w-full h-full object-cover"
+                                @error="mobileAvatarError = true"
                             />
                             <span v-else>{{ user.name?.charAt(0) }}</span>
                         </div>

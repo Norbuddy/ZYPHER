@@ -33,7 +33,12 @@ const createTeam = () => {
                 <InputLabel value="Team Owner" />
 
                 <div class="flex items-center mt-2">
-                    <img class="object-cover size-12 rounded-full" :src="$page.props.auth.user.profile_photo_url" :alt="$page.props.auth.user.name">
+                    <img
+                        class="object-cover size-12 rounded-full"
+                        :src="$page.props.auth.user.profile_photo_url"
+                        :alt="$page.props.auth.user.name"
+                        @error="$event.target.src = 'https://ui-avatars.com/api/?name=' + encodeURIComponent($page.props.auth.user.name) + '&color=7F9CF5&background=EBF4FF'"
+                    >
 
                     <div class="ms-4 leading-tight">
                         <div class="text-gray-900">{{ $page.props.auth.user.name }}</div>
