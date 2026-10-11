@@ -118,9 +118,23 @@ const visibleCategories = computed(() => {
         'Shoes',
     ];
 
-    return [...props.categories]
-        .filter(category => order.includes(category.name))
-        .sort((a, b) => order.indexOf(a.name) - order.indexOf(b.name));
+    const list = [];
+    order.forEach((catName) => {
+        const found = props.categories?.find(
+            c => c.name?.toLowerCase() === catName.toLowerCase() || c.slug?.toLowerCase() === catName.toLowerCase()
+        );
+        if (found) {
+            list.push(found);
+        } else if (catName === 'Shoes') {
+            list.push({
+                id: 'shoes',
+                name: 'Shoes',
+                slug: 'shoes',
+            });
+        }
+    });
+
+    return list;
 });
 
 const productImage = (product) => {

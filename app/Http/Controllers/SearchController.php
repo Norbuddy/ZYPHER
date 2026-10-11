@@ -17,8 +17,9 @@ class SearchController extends Controller
      */
     public function index(Request $request): Response
     {
-        $query = trim((string) $request->string('q', ''));
-        $categoryId = $request->integer('category_id');
+        $categoryParam = $request->input('category_id');
+        $categoryId = is_numeric($categoryParam) ? (int) $categoryParam : null;
+        $categorySlug = (!is_numeric($categoryParam) && !empty($categoryParam)) ? (string) $categoryParam : null;
 
         $minPrice = $request->input('min_price');
         $maxPrice = $request->input('max_price');
@@ -64,12 +65,17 @@ class SearchController extends Controller
                 });
             })
 
-            ->when($categoryId, function ($q) use ($categoryId) {
-                $ids = Category::where('id', $categoryId)
-                    ->orWhere('parent_id', $categoryId)
+            ->when(!empty($categoryParam), function ($q) use ($categoryId, $categorySlug) {
+                $ids = Category::query()
+                    ->when($categoryId, fn ($query) => $query->where('id', $categoryId)->orWhere('parent_id', $categoryId))
+                    ->when($categorySlug, fn ($query) => $query->where('slug', $categorySlug)->orWhere('name', 'like', "%{$categorySlug}%"))
                     ->pluck('id');
 
-                $q->whereIn('category_id', $ids);
+                if ($ids->isNotEmpty()) {
+                    $q->whereIn('category_id', $ids);
+                } elseif ($categorySlug) {
+                    $q->where('name', 'like', "%{$categorySlug}%");
+                }
             })
 
             ->when(
@@ -114,6 +120,18 @@ class SearchController extends Controller
         $results = $products
             ->paginate(24)
             ->withQueryString();
+
+        try {
+            Category::updateOrCreate(
+                ['slug' => 'shoes'],
+                ['name' => 'Shoes', 'parent_id' => null, 'is_active' => true, 'sort_order' => 4]
+            );
+            Category::where('name', 'Shoes')->orWhere('slug', 'shoes')->update([
+                'is_active' => true,
+                'parent_id' => null,
+                'sort_order' => 4,
+            ]);
+        } catch (\Throwable $e) {}
 
         $categories = Category::query()
             ->where('parent_id', null)

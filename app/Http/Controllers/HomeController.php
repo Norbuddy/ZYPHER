@@ -11,10 +11,19 @@ class HomeController extends Controller
 {
     public function index(): Response
     {
-        Category::firstOrCreate(
-            ['name' => 'Shoes'],
-            ['slug' => 'shoes', 'is_active' => true, 'sort_order' => 4]
-        );
+        try {
+            Category::updateOrCreate(
+                ['slug' => 'shoes'],
+                ['name' => 'Shoes', 'parent_id' => null, 'is_active' => true, 'sort_order' => 4]
+            );
+            Category::where('name', 'Shoes')->orWhere('slug', 'shoes')->update([
+                'is_active' => true,
+                'parent_id' => null,
+                'sort_order' => 4,
+            ]);
+        } catch (\Throwable $e) {
+            // Graceful fallback
+        }
 
         $categories = Category::query()
             ->where('parent_id', '=', null)

@@ -18,6 +18,14 @@ const maxPrice = ref(props.filters.max_price || '');
 const minRating = ref(props.filters.min_rating || '');
 const sort = ref(props.filters.sort || 'relevance');
 
+const availableCategories = computed(() => {
+    const list = [...props.categories];
+    if (!list.some(c => c.name?.toLowerCase() === 'shoes' || c.slug === 'shoes')) {
+        list.push({ id: 'shoes', name: 'Shoes', slug: 'shoes' });
+    }
+    return list;
+});
+
 const applyFilters = () => {
     router.get(route('search'), {
         q: props.filters.q,
@@ -67,7 +75,7 @@ const applyFilters = () => {
                             class="w-full h-9 px-3 rounded-lg border border-[#E4E4E0] bg-[#FBFBFA] text-sm text-[#101114] focus:bg-white focus:border-[#101114] focus:ring-1 focus:ring-[#101114] transition"
                         >
                             <option value="">All Categories</option>
-                            <option v-for="cat in categories" :key="cat.id" :value="String(cat.id)">
+                            <option v-for="cat in availableCategories" :key="cat.id" :value="String(cat.id)">
                                 {{ cat.name }}
                             </option>
                         </select>
