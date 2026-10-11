@@ -698,33 +698,33 @@ const recentOrdersColumns = [
         </div>
 
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div v-if="!isBranchUser" class="bg-white p-5 rounded-xl border border-[#E4E4E0]">
-                <p class="text-xs text-[#8A8B90] mb-1">Pending Orders</p>
-                <p class="text-2xl font-semibold">{{ stats.pending_orders }}</p>
+            <div v-if="!isBranchUser" class="bg-white p-5 rounded-2xl border border-gray-200/80 shadow-[0_2px_8px_rgba(0,0,0,0.03)] hover:shadow-md transition">
+                <p class="text-xs font-semibold text-gray-500 mb-1">Pending Orders</p>
+                <p class="text-2xl font-bold text-gray-900 tracking-tight">{{ stats.pending_orders }}</p>
             </div>
-            <div v-if="!isBranchUser" class="bg-white p-5 rounded-xl border border-[#E4E4E0]">
-                <p class="text-xs text-[#8A8B90] mb-1">Processing</p>
-                <p class="text-2xl font-semibold">{{ stats.processing_orders }}</p>
+            <div v-if="!isBranchUser" class="bg-white p-5 rounded-2xl border border-gray-200/80 shadow-[0_2px_8px_rgba(0,0,0,0.03)] hover:shadow-md transition">
+                <p class="text-xs font-semibold text-gray-500 mb-1">Processing</p>
+                <p class="text-2xl font-bold text-gray-900 tracking-tight">{{ stats.processing_orders }}</p>
             </div>
-            <div class="bg-white p-5 rounded-xl border border-[#E4E4E0]">
-                <p class="text-xs text-[#8A8B90] mb-1">Active Products</p>
-                <p class="text-2xl font-semibold">{{ stats.active_products }}</p>
+            <div class="bg-white p-5 rounded-2xl border border-gray-200/80 shadow-[0_2px_8px_rgba(0,0,0,0.03)] hover:shadow-md transition">
+                <p class="text-xs font-semibold text-gray-500 mb-1">Active Products</p>
+                <p class="text-2xl font-bold text-gray-900 tracking-tight">{{ stats.active_products }}</p>
             </div>
-            <div class="bg-white p-5 rounded-xl border border-[#E4E4E0]">
-                <p class="text-xs text-[#8A8B90] mb-1">Gross Revenue</p>
-                <p class="text-2xl font-semibold">₱{{ stats.gross_revenue.toLocaleString() }}</p>
+            <div class="bg-white p-5 rounded-2xl border border-gray-200/80 shadow-[0_2px_8px_rgba(0,0,0,0.03)] hover:shadow-md transition">
+                <p class="text-xs font-semibold text-gray-500 mb-1">Gross Revenue</p>
+                <p class="text-2xl font-bold text-gray-900 tracking-tight">₱{{ stats.gross_revenue.toLocaleString() }}</p>
             </div>
-            <div v-if="!isBranchUser" class="bg-white p-5 rounded-xl border border-[#E4E4E0]">
-                <p class="text-xs text-[#8A8B90] mb-1">COGS</p>
-                <p class="text-2xl font-semibold">₱{{ stats.cogs.toLocaleString() }}</p>
+            <div v-if="!isBranchUser" class="bg-white p-5 rounded-2xl border border-gray-200/80 shadow-[0_2px_8px_rgba(0,0,0,0.03)] hover:shadow-md transition">
+                <p class="text-xs font-semibold text-gray-500 mb-1">COGS</p>
+                <p class="text-2xl font-bold text-gray-900 tracking-tight">₱{{ stats.cogs.toLocaleString() }}</p>
             </div>
-            <div v-if="!isBranchUser" class="bg-white p-5 rounded-xl border border-emerald-200 bg-emerald-50">
-                <p class="text-xs text-emerald-700 mb-1">Gross Profit</p>
-                <p class="text-2xl font-semibold text-emerald-700">₱{{ stats.gross_profit.toLocaleString() }}</p>
+            <div v-if="!isBranchUser" class="bg-emerald-50/50 p-5 rounded-2xl border border-emerald-200 shadow-[0_2px_8px_rgba(0,0,0,0.03)] hover:shadow-md transition">
+                <p class="text-xs font-semibold text-emerald-800 mb-1">Gross Profit</p>
+                <p class="text-2xl font-bold text-emerald-700 tracking-tight">₱{{ stats.gross_profit.toLocaleString() }}</p>
             </div>
-            <div v-if="!isBranchUser" class="bg-white p-5 rounded-xl border border-[#E4E4E0]">
-                <p class="text-xs text-[#8A8B90] mb-1">Net Payout (after commission)</p>
-                <p class="text-2xl font-semibold">₱{{ stats.net_payout.toLocaleString() }}</p>
+            <div v-if="!isBranchUser" class="bg-white p-5 rounded-2xl border border-gray-200/80 shadow-[0_2px_8px_rgba(0,0,0,0.03)] hover:shadow-md transition">
+                <p class="text-xs font-semibold text-gray-500 mb-1">Net Payout (after commission)</p>
+                <p class="text-2xl font-bold text-gray-900 tracking-tight">₱{{ stats.net_payout.toLocaleString() }}</p>
             </div>
             <!-- <div v-if="!isBranchUser" class="bg-white p-5 rounded-xl border border-amber-200 bg-amber-50 flex items-center justify-between">
                 <div>
@@ -739,14 +739,14 @@ const recentOrdersColumns = [
                     PAY SUPPLIER
                 </button>
             </div> -->
-            <div v-if="!isBranchUser" class="bg-white p-5 rounded-xl border border-indigo-200 bg-indigo-50 col-span-2 flex items-center justify-between">
+            <div v-if="!isBranchUser" class="bg-indigo-50/50 p-5 rounded-2xl border border-indigo-200 col-span-2 flex items-center justify-between shadow-[0_2px_8px_rgba(0,0,0,0.03)]">
                 <div>
-                    <p class="text-xs text-indigo-700 mb-1">Cash on Hand</p>
-                    <p class="text-2xl font-semibold text-indigo-700">₱{{ stats.cash_on_hand.toLocaleString() }}</p>
+                    <p class="text-xs font-semibold text-indigo-800 mb-1">Cash on Hand</p>
+                    <p class="text-2xl font-bold text-indigo-900 tracking-tight">₱{{ stats.cash_on_hand.toLocaleString() }}</p>
                 </div>
                 <button
                     @click="showAddCashModal = true"
-                    class="rounded-lg bg-indigo-600 hover:bg-indigo-700 px-3 py-2 text-xs font-bold text-white whitespace-nowrap"
+                    class="rounded-xl bg-indigo-600 hover:bg-indigo-700 px-4 py-2 text-xs font-bold text-white shadow-sm transition"
                 >
                     + ADD CASH
                 </button>

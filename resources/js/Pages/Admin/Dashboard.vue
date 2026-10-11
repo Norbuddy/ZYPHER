@@ -81,21 +81,25 @@ const userArea = computed(() => areaPath(props.charts.userGrowth, maxUsers.value
     <AdminLayout>
         <Head title="Admin Dashboard" />
 
-        <div class="mb-6 flex flex-wrap items-center justify-between gap-4">
-            <h1 class="text-xl font-semibold text-[#101114]">Platform Overview</h1>
-            <div class="inline-flex rounded-xl border border-[#E4E4E0] bg-white p-1 text-sm">
+        <!-- Page Header -->
+        <div class="mb-8 flex flex-wrap items-center justify-between gap-4">
+            <div>
+                <h1 class="text-2xl font-bold tracking-tight text-[#101114]">Platform Overview</h1>
+                <p class="text-xs text-[#8A8B90] mt-1">Real-time marketplace monitoring across all active sellers, transactions, and user traffic.</p>
+            </div>
+            <div class="inline-flex rounded-xl border border-[#E4E4E0] bg-white p-1 text-xs shadow-xs">
                 <button
                     type="button"
-                    class="rounded-lg px-4 py-1.5 font-medium transition"
-                    :class="tab === 'overview' ? 'bg-[#101114] text-white' : 'text-[#5F5E5A] hover:text-[#101114]'"
+                    class="rounded-lg px-4 py-2 font-semibold transition"
+                    :class="tab === 'overview' ? 'bg-[#101114] text-white shadow-xs' : 'text-[#5F5E5A] hover:text-[#101114]'"
                     @click="tab = 'overview'"
                 >
                     Overview
                 </button>
                 <button
                     type="button"
-                    class="rounded-lg px-4 py-1.5 font-medium transition"
-                    :class="tab === 'reports' ? 'bg-[#101114] text-white' : 'text-[#5F5E5A] hover:text-[#101114]'"
+                    class="rounded-lg px-4 py-2 font-semibold transition"
+                    :class="tab === 'reports' ? 'bg-[#101114] text-white shadow-xs' : 'text-[#5F5E5A] hover:text-[#101114]'"
                     @click="tab = 'reports'"
                 >
                     Reports
@@ -104,30 +108,61 @@ const userArea = computed(() => areaPath(props.charts.userGrowth, maxUsers.value
         </div>
 
         <!-- KPI cards (shared) -->
-        <div class="mb-6 grid grid-cols-2 gap-4 md:grid-cols-3">
-            <div class="rounded-xl border border-[#E4E4E0] bg-white p-5">
-                <p class="mb-1 text-xs text-[#8A8B90]">Total Revenue (GMV)</p>
-                <p class="text-2xl font-semibold text-[#101114]">₱{{ formatMoney(stats.total_revenue) }}</p>
+        <div class="mb-8 grid grid-cols-2 gap-4 md:grid-cols-3">
+            <div class="rounded-2xl border border-[#EAEAE5] bg-white p-5 shadow-xs hover:shadow-sm transition">
+                <div class="flex items-center justify-between mb-3">
+                    <span class="text-xs font-medium text-[#8A8B90]">Total Revenue (GMV)</span>
+                    <span class="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-sm font-bold">₱</span>
+                </div>
+                <p class="text-2xl font-bold tracking-tight text-[#101114]">₱{{ formatMoney(stats.total_revenue) }}</p>
+                <p class="text-[11px] text-emerald-600 font-medium mt-1 flex items-center gap-1">
+                    <span>↑</span> Gross Merchandise Value
+                </p>
             </div>
-            <div class="rounded-xl border border-[#E4E4E0] bg-white p-5">
-                <p class="mb-1 text-xs text-[#8A8B90]">Commission Earned</p>
-                <p class="text-2xl font-semibold text-[#101114]">₱{{ formatMoney(stats.total_commission) }}</p>
+
+            <div class="rounded-2xl border border-[#EAEAE5] bg-white p-5 shadow-xs hover:shadow-sm transition">
+                <div class="flex items-center justify-between mb-3">
+                    <span class="text-xs font-medium text-[#8A8B90]">Commission Earned</span>
+                    <span class="w-8 h-8 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-xs">🏛️</span>
+                </div>
+                <p class="text-2xl font-bold tracking-tight text-[#101114]">₱{{ formatMoney(stats.total_commission) }}</p>
+                <p class="text-[11px] text-indigo-600 font-medium mt-1">Platform commission</p>
             </div>
-            <div class="rounded-xl border border-[#E4E4E0] bg-white p-5">
-                <p class="mb-1 text-xs text-[#8A8B90]">Active Shops</p>
-                <p class="text-2xl font-semibold text-[#101114]">{{ stats.active_shops }}</p>
+
+            <div class="rounded-2xl border border-[#EAEAE5] bg-white p-5 shadow-xs hover:shadow-sm transition">
+                <div class="flex items-center justify-between mb-3">
+                    <span class="text-xs font-medium text-[#8A8B90]">Active Shops</span>
+                    <span class="w-8 h-8 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center text-xs">🏪</span>
+                </div>
+                <p class="text-2xl font-bold tracking-tight text-[#101114]">{{ stats.active_shops }}</p>
+                <p class="text-[11px] text-blue-600 font-medium mt-1">Verified merchant stores</p>
             </div>
-            <div class="rounded-xl border border-[#E4E4E0] bg-white p-5">
-                <p class="mb-1 text-xs text-[#8A8B90]">Pending Approvals</p>
-                <p class="text-2xl font-semibold text-[#101114]">{{ stats.pending_shops }}</p>
+
+            <div class="rounded-2xl border border-[#EAEAE5] bg-white p-5 shadow-xs hover:shadow-sm transition">
+                <div class="flex items-center justify-between mb-3">
+                    <span class="text-xs font-medium text-[#8A8B90]">Pending Approvals</span>
+                    <span class="w-8 h-8 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center text-xs">⏳</span>
+                </div>
+                <p class="text-2xl font-bold tracking-tight text-[#101114]">{{ stats.pending_shops }}</p>
+                <p class="text-[11px] text-amber-600 font-medium mt-1">Awaiting verification</p>
             </div>
-            <div class="rounded-xl border border-[#E4E4E0] bg-white p-5">
-                <p class="mb-1 text-xs text-[#8A8B90]">Total Users</p>
-                <p class="text-2xl font-semibold text-[#101114]">{{ stats.total_users }}</p>
+
+            <div class="rounded-2xl border border-[#EAEAE5] bg-white p-5 shadow-xs hover:shadow-sm transition">
+                <div class="flex items-center justify-between mb-3">
+                    <span class="text-xs font-medium text-[#8A8B90]">Total Users</span>
+                    <span class="w-8 h-8 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center text-xs">👥</span>
+                </div>
+                <p class="text-2xl font-bold tracking-tight text-[#101114]">{{ stats.total_users }}</p>
+                <p class="text-[11px] text-purple-600 font-medium mt-1">Buyers & sellers registered</p>
             </div>
-            <div class="rounded-xl border border-[#E4E4E0] bg-white p-5">
-                <p class="mb-1 text-xs text-[#8A8B90]">Total Orders</p>
-                <p class="text-2xl font-semibold text-[#101114]">{{ stats.total_orders }}</p>
+
+            <div class="rounded-2xl border border-[#EAEAE5] bg-white p-5 shadow-xs hover:shadow-sm transition">
+                <div class="flex items-center justify-between mb-3">
+                    <span class="text-xs font-medium text-[#8A8B90]">Total Orders</span>
+                    <span class="w-8 h-8 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center text-xs">📦</span>
+                </div>
+                <p class="text-2xl font-bold tracking-tight text-[#101114]">{{ stats.total_orders }}</p>
+                <p class="text-[11px] text-rose-600 font-medium mt-1">All-time order transactions</p>
             </div>
         </div>
 

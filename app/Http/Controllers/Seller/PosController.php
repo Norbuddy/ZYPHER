@@ -28,7 +28,11 @@ class PosController extends Controller
                 $query->where('pos_available', true)
                     ->orWhere('status', \App\Enums\ProductStatus::Active);
             })
-            ->with(['variants' => fn ($q) => $q->when($branchId, fn ($variants) => $variants->where('branch_id', $branchId)), 'images' => fn ($q) => $q->where('is_primary', true)])
+            ->with([
+                'category',
+                'variants' => fn ($q) => $q->when($branchId, fn ($variants) => $variants->where('branch_id', $branchId)),
+                'images' => fn ($q) => $q->where('is_primary', true),
+            ])
             ->get();
 
         $recentSales = PosSale::where('team_id', $team?->id)
@@ -38,12 +42,18 @@ class PosController extends Controller
             ->take(10)
             ->get();
 
+        $categories = \App\Models\Category::where('is_active', true)
+            ->orderBy('sort_order')
+            ->get(['id', 'name', 'slug']);
+
         $paymongo = app(PayMongoService::class);
 
         return Inertia::render('Seller/Pos/Index', [
             'products' => $products,
+            'categories' => $categories,
             'recentSales' => $recentSales,
             'branchName' => $request->user()->branch?->name ?? $team?->name,
+            'cashierName' => $request->user()->name,
             'paymongoConfigured' => $paymongo->isConfigured(),
             'paymongoTestMode' => $paymongo->isTestMode(),
             'paymongoError' => $paymongo->configurationError(),

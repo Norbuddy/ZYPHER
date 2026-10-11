@@ -105,41 +105,62 @@ const revenueArea = computed(() => areaPath(props.charts.ordersByDay, 'revenue',
                 </div>
             </div>
 
-            <!-- Stat cards -->
-            <div class="grid gap-6 lg:grid-cols-3">
-                <div class="h-40 rounded-2xl border border-gray-200 bg-gray-100 p-6 shadow-inner">
+            <!-- Stat cards matching Mockup -->
+            <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                <div class="rounded-2xl border border-gray-200/80 bg-white p-5 shadow-[0_2px_8px_rgba(0,0,0,0.04)] hover:shadow-md transition">
                     <div class="flex items-center justify-between">
-                        <p class="text-sm text-gray-500">Total Orders</p>
-                        <p class="text-lg font-semibold text-[#101114]">{{ stats.total_orders }}</p>
-                    </div>
-                    <div v-if="stats.latest_order_shop">
-                        <p class="mt-3 text-sm text-gray-600">Latest order from {{ stats.latest_order_shop }}</p>
-                    </div>
-                    <div v-if="stats.latest_order_products">
-                        <p class="text-sm text-gray-600">Product: {{ stats.latest_order_products }}</p>
-                    </div>
-                </div>
-
-                <div class="h-40 rounded-2xl border border-gray-200 bg-gray-100 p-6 shadow-inner">
-                    <div class="flex items-center justify-between">
-                        <p class="text-sm text-gray-500">Total Revenue</p>
-                        <p class="text-lg font-semibold text-[#101114]">₱{{ Number(stats.total_revenue || 0).toLocaleString() }}</p>
-                    </div>
-                    <p class="mt-3 text-sm text-gray-600">Revenue from {{ stats.latest_order_products || '—' }}</p>
-                    <p class="text-sm text-gray-600">Shop: {{ stats.latest_order_shop || '—' }}</p>
-                </div>
-
-                <div class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-                    <div class="flex items-start justify-between gap-4">
-                        <div>
-                            <p class="text-sm text-gray-500">Inventory Summary</p>
-                            <p class="mt-2 text-3xl font-semibold text-[#101114]">{{ stats.inventory_products }}</p>
-                            <p class="mt-1 text-xs text-gray-500">products</p>
+                        <span class="text-xs font-semibold uppercase tracking-wider text-gray-500">Total Orders</span>
+                        <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
+                            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                            </svg>
                         </div>
-                        <div class="text-right text-xs text-gray-500">
-                            <p>Low stock: <span class="font-semibold text-amber-600">{{ stats.low_stock_count }}</span></p>
-                            <p class="mt-1">Out of stock: <span class="font-semibold text-rose-600">{{ stats.out_of_stock_count }}</span></p>
-                            <p class="mt-2">Value: ₱{{ stats.inventory_value }}</p>
+                    </div>
+                    <div class="mt-3 flex items-baseline gap-2">
+                        <p class="text-2xl font-bold text-gray-900 tracking-tight">{{ stats.total_orders }}</p>
+                        <span class="inline-flex items-center rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold text-emerald-700">
+                            Active
+                        </span>
+                    </div>
+                    <div v-if="stats.latest_order_shop" class="mt-2 text-xs text-gray-500 truncate">
+                        Latest: <span class="font-medium text-gray-700">{{ stats.latest_order_shop }}</span>
+                    </div>
+                </div>
+
+                <div class="rounded-2xl border border-gray-200/80 bg-white p-5 shadow-[0_2px_8px_rgba(0,0,0,0.04)] hover:shadow-md transition">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-semibold uppercase tracking-wider text-gray-500">Total Revenue</span>
+                        <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600">
+                            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="mt-3 flex items-baseline gap-2">
+                        <p class="text-2xl font-bold text-gray-900 tracking-tight">₱{{ Number(stats.total_revenue || 0).toLocaleString() }}</p>
+                    </div>
+                    <p class="mt-2 text-xs text-gray-500 truncate">
+                        From: <span class="font-medium text-gray-700">{{ stats.latest_order_shop || 'All Shops' }}</span>
+                    </p>
+                </div>
+
+                <div class="rounded-2xl border border-gray-200/80 bg-white p-5 shadow-[0_2px_8px_rgba(0,0,0,0.04)] hover:shadow-md transition sm:col-span-2 lg:col-span-1">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-semibold uppercase tracking-wider text-gray-500">Inventory Supply</span>
+                        <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-purple-50 text-purple-600">
+                            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="mt-3 flex items-baseline justify-between">
+                        <div>
+                            <p class="text-2xl font-bold text-gray-900 tracking-tight">{{ stats.inventory_products }}</p>
+                            <p class="text-[11px] text-gray-400">Products supplied</p>
+                        </div>
+                        <div class="text-right text-xs">
+                            <p class="text-amber-600 font-semibold">{{ stats.low_stock_count }} Low</p>
+                            <p class="text-rose-600 font-semibold mt-0.5">{{ stats.out_of_stock_count }} Out</p>
                         </div>
                     </div>
                 </div>

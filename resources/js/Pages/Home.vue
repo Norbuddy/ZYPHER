@@ -110,7 +110,7 @@ onBeforeUnmount(() => {
 });
 
 const visibleCategories = computed(() => {
-    const allowed = [
+    const order = [
         'T-Shirts',
         'Long Sleeves',
         'Pants',
@@ -118,9 +118,9 @@ const visibleCategories = computed(() => {
         'Shoes',
     ];
 
-    return props.categories.filter(category =>
-        allowed.includes(category.name)
-    );
+    return [...props.categories]
+        .filter(category => order.includes(category.name))
+        .sort((a, b) => order.indexOf(a.name) - order.indexOf(b.name));
 });
 
 const productImage = (product) => {
@@ -313,76 +313,81 @@ const ratingColorClass = (rating) => {
             <!-- CATEGORIES -->
             <!-- ================================================= -->
 
-            <div
-                class="flex flex-wrap gap-3 mb-10"
-            >
+            <div class="flex items-center gap-2.5 mb-10 overflow-x-auto pb-2 scrollbar-none">
+                <Link
+                    :href="route('search')"
+                    class="shrink-0 px-4 py-2 rounded-full text-xs font-semibold border transition-all duration-200 bg-[#101114] text-white border-[#101114] shadow-xs"
+                >
+                    All Categories
+                </Link>
 
                 <Link
                     v-for="category in visibleCategories"
                     :key="category.id"
-                    :href="
-                        route('search') +
-                        '?category_id=' +
-                        category.id
-                    "
-                    class="px-4 py-2 rounded-full border border-[#E4E4E0] bg-white text-sm text-[#5F5E5A] hover:border-[#6D5EF8] hover:text-[#6D5EF8] transition-colors"
+                    :href="route('search') + '?category_id=' + category.id"
+                    class="shrink-0 px-4 py-2 rounded-full text-xs font-medium border border-[#E4E4E0] bg-white text-[#5F5E5A] hover:border-[#101114] hover:text-[#101114] transition-all duration-200 shadow-xs"
                 >
                     {{ category.name }}
                 </Link>
-
             </div>
-
 
             <!-- ================================================= -->
             <!-- TOP TRENDING PRODUCTS (by highest rating) -->
             <!-- ================================================= -->
 
-            <div v-if="topTrending.length > 0" class="mb-12">
-                <div class="flex items-center justify-between mb-4">
-                    <h2 class="text-lg font-semibold text-[#101114] flex items-center gap-1.5">
-                        <span>🔥</span> Top Trending
-                    </h2>
+            <div v-if="topTrending.length > 0" class="mb-14">
+                <div class="flex items-center justify-between mb-5">
+                    <div>
+                        <h2 class="text-lg font-bold text-[#101114] flex items-center gap-2 tracking-tight">
+                            <span>🔥</span> Top Trending Products
+                        </h2>
+                        <p class="text-xs text-[#8A8B90] mt-0.5">Highly-rated picks from verified community sellers</p>
+                    </div>
 
                     <Link
                         :href="route('search')"
-                        class="text-xs font-medium text-[#6D5EF8] hover:underline"
+                        class="text-xs font-semibold text-[#101114] hover:underline flex items-center gap-1"
                     >
-                        See all
+                        <span>View all</span>
+                        <span>&rarr;</span>
                     </Link>
                 </div>
 
-                <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-x-4 gap-y-8">
+                <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5">
                     <Link
                         v-for="product in topTrending"
                         :key="product.id"
                         :href="route('products.show', [product.team.slug, product.slug])"
-                        class="group min-w-0"
+                        class="group p-3 rounded-2xl bg-white border border-[#EAEAE5] hover:border-[#101114]/30 hover:shadow-md transition-all duration-300 flex flex-col justify-between"
                     >
-                        <div class="relative aspect-square rounded-xl bg-[#F0F0EC] overflow-hidden mb-2">
-                            <span class="absolute top-2 left-2 z-10 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-white/90 text-[#101114] shadow-sm">
-                                🔥 Trending
-                            </span>
+                        <div>
+                            <div class="relative aspect-square rounded-xl bg-[#F0F0EC] overflow-hidden mb-3">
+                                <span class="absolute top-2.5 left-2.5 z-10 text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-black/85 text-white backdrop-blur-xs shadow-xs">
+                                    Trending
+                                </span>
 
-                            <img
-                                v-if="productImage(product)"
-                                :src="productImage(product)"
-                                :alt="product.name"
-                                class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                            />
-                            <div v-else class="w-full h-full flex items-center justify-center text-xs text-[#A0A19D]">
-                                No image
+                                <img
+                                    v-if="productImage(product)"
+                                    :src="productImage(product)"
+                                    :alt="product.name"
+                                    class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                />
+                                <div v-else class="w-full h-full flex items-center justify-center text-xs text-[#A0A19D]">
+                                    No image
+                                </div>
+                            </div>
+
+                            <p class="text-[11px] font-medium text-[#8A8B90] mb-0.5 truncate">{{ product.team?.name }}</p>
+                            <p class="text-sm font-semibold text-[#101114] truncate mb-1 group-hover:text-black">{{ product.name }}</p>
+                        </div>
+
+                        <div class="pt-2 mt-auto border-t border-[#F0F0EC] flex items-center justify-between">
+                            <span class="text-sm font-bold text-[#101114]">₱{{ Number(product.min_price || 0).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}</span>
+                            <div class="flex items-center gap-1 text-[11px] text-[#5F5E5A]">
+                                <span class="text-amber-500 font-semibold">★</span>
+                                <span>{{ product.avg_rating || '5.0' }}</span>
                             </div>
                         </div>
-
-                        <p class="text-sm font-medium text-[#101114] truncate">{{ product.name }}</p>
-
-                        <div class="flex items-center gap-1 text-xs">
-                            <span :class="ratingColorClass(product.avg_rating)">★ {{ product.avg_rating || '—' }}</span>
-                            <span class="text-[#8A8B90]">({{ product.rating_count }})</span>
-                        </div>
-
-                        <p class="text-sm text-[#6D5EF8] font-semibold">₱{{ product.min_price }}</p>
-                        <p class="text-xs text-[#8A8B90] truncate">{{ product.team?.name }}</p>
                     </Link>
                 </div>
             </div>
@@ -391,52 +396,58 @@ const ratingColorClass = (rating) => {
             <!-- BEST SELLERS (by units sold) -->
             <!-- ================================================= -->
 
-            <div class="flex items-center justify-between mb-4">
-                <h2 class="text-lg font-semibold text-[#101114] flex items-center gap-1.5">
-                    <span>🏆</span> Best Sellers
-                </h2>
+            <div class="mb-14">
+                <div class="flex items-center justify-between mb-5">
+                    <div>
+                        <h2 class="text-lg font-bold text-[#101114] flex items-center gap-2 tracking-tight">
+                            <span>🏆</span> Best Sellers
+                        </h2>
+                        <p class="text-xs text-[#8A8B90] mt-0.5">Most in-demand essentials moving fast this week</p>
+                    </div>
 
-                <Link
-                    :href="route('search')"
-                    class="text-xs font-medium text-[#6D5EF8] hover:underline"
-                >
-                    See all
-                </Link>
-            </div>
+                    <Link
+                        :href="route('search')"
+                        class="text-xs font-semibold text-[#101114] hover:underline flex items-center gap-1"
+                    >
+                        <span>View all</span>
+                        <span>&rarr;</span>
+                    </Link>
+                </div>
 
-            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-x-4 gap-y-8">
-                <Link
-                    v-for="product in bestSellers"
-                    :key="product.id"
-                    :href="route('products.show', [product.team.slug, product.slug])"
-                    class="group min-w-0"
-                >
-                    <div class="relative aspect-square rounded-xl bg-[#F0F0EC] overflow-hidden mb-2">
-                        <span class="absolute top-2 left-2 z-10 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-white/90 text-[#101114] shadow-sm">
-                            🏆 Best Seller
-                        </span>
+                <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5">
+                    <Link
+                        v-for="product in bestSellers"
+                        :key="product.id"
+                        :href="route('products.show', [product.team.slug, product.slug])"
+                        class="group p-3 rounded-2xl bg-white border border-[#EAEAE5] hover:border-[#101114]/30 hover:shadow-md transition-all duration-300 flex flex-col justify-between"
+                    >
+                        <div>
+                            <div class="relative aspect-square rounded-xl bg-[#F0F0EC] overflow-hidden mb-3">
+                                <span class="absolute top-2.5 left-2.5 z-10 text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-white/95 text-[#101114] shadow-sm">
+                                    Best Seller
+                                </span>
 
-                        <img
-                            v-if="productImage(product)"
-                            :src="productImage(product)"
-                            :alt="product.name"
-                            class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                        />
-                        <div v-else class="w-full h-full flex items-center justify-center text-xs text-[#A0A19D]">
-                            No image
+                                <img
+                                    v-if="productImage(product)"
+                                    :src="productImage(product)"
+                                    :alt="product.name"
+                                    class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                />
+                                <div v-else class="w-full h-full flex items-center justify-center text-xs text-[#A0A19D]">
+                                    No image
+                                </div>
+                            </div>
+
+                            <p class="text-[11px] font-medium text-[#8A8B90] mb-0.5 truncate">{{ product.team?.name }}</p>
+                            <p class="text-sm font-semibold text-[#101114] truncate mb-1 group-hover:text-black">{{ product.name }}</p>
                         </div>
-                    </div>
 
-                    <p class="text-sm font-medium text-[#101114] truncate">{{ product.name }}</p>
-
-                    <div class="flex items-center gap-1 text-xs">
-                        <span :class="ratingColorClass(product.avg_rating)">★ {{ product.avg_rating || '—' }}</span>
-                        <span class="text-[#8A8B90]">· {{ product.sold_count }} sold</span>
-                    </div>
-
-                    <p class="text-sm text-[#6D5EF8] font-semibold">₱{{ product.min_price }}</p>
-                    <p class="text-xs text-[#8A8B90] truncate">{{ product.team?.name }}</p>
-                </Link>
+                        <div class="pt-2 mt-auto border-t border-[#F0F0EC] flex items-center justify-between">
+                            <span class="text-sm font-bold text-[#101114]">₱{{ Number(product.min_price || 0).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}</span>
+                            <span class="text-[11px] text-[#8A8B90] font-medium">{{ product.sold_count }} sold</span>
+                        </div>
+                    </Link>
+                </div>
             </div>
 
         </section>

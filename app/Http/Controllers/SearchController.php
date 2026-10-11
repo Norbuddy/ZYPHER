@@ -115,8 +115,15 @@ class SearchController extends Controller
             ->paginate(24)
             ->withQueryString();
 
+        $categories = Category::query()
+            ->where('parent_id', null)
+            ->where('is_active', true)
+            ->orderBy('sort_order', 'asc')
+            ->get(['id', 'name', 'slug']);
+
         return Inertia::render('Search/Index', [
             'results' => $results,
+            'categories' => $categories,
 
             'filters' => $request->only([
                 'q',

@@ -11,6 +11,11 @@ class HomeController extends Controller
 {
     public function index(): Response
     {
+        Category::firstOrCreate(
+            ['name' => 'Shoes'],
+            ['slug' => 'shoes', 'is_active' => true, 'sort_order' => 4]
+        );
+
         $categories = Category::query()
             ->where('parent_id', '=', null)
             ->where('is_active', '=', true)
