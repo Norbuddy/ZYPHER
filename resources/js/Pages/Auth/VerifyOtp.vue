@@ -8,9 +8,9 @@ import {
     PinInput,
     PinInputGroup,
     PinInputSlot,
-} from '@/components/ui/pin-input'
+} from '@/Components/ui/pin-input'
 
-import { Button } from '@/components/ui/button'
+import { Button } from '@/Components/ui/button'
 
 const props = defineProps({
     email: String,
