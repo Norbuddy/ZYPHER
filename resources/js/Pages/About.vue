@@ -49,7 +49,7 @@ const capabilities = [
 
             <p class="text-sm sm:text-base text-[#5F5E5A] leading-relaxed mb-10 max-w-2xl">
                 Zypher is an online marketplace that connects buyers with independent sellers,
-                suppliers, and branch partners in one storefront. Whether you're looking to buy
+                and branch partners in one storefront. Whether you're looking to buy
                 something new or start selling your own products, Zypher gives you the tools to
                 do it — browsing, checkout, messaging, and order tracking, all in one place.
             </p>
