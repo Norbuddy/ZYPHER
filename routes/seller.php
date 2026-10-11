@@ -464,7 +464,7 @@ Route::middleware(['auth', 'verified', 'is.approved.seller', 'branch.access'])
         })->name('inventory.manual.store');
 
         Route::post('/shop/profile', [\App\Http\Controllers\Seller\ShopProfileController::class, 'update'])
-            ->name('seller.shop.update');
+            ->name('shop.update');
 
     });
 

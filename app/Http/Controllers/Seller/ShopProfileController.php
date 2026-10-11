@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Validation\Rule;
 
 class ShopProfileController extends Controller
 {
@@ -16,23 +15,28 @@ class ShopProfileController extends Controller
     public function update(Request $request): RedirectResponse
     {
         $user = $request->user();
-        $team = $user->currentTeam;
+        $team = $user->currentTeam ?? $user->ownedTeams()->first() ?? $user->teams()->first();
 
         if (!$team) {
-            abort(403, 'No store associated with account.');
+            return back()->withErrors(['name' => 'Walang nahanap na active store para sa account na ito.']);
         }
 
         $data = $request->validate([
             'name' => ['required', 'string', 'max:100'],
             'description' => ['nullable', 'string', 'max:1000'],
-            'logo' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp', 'max:3072'],
         ]);
 
         $team->name = $data['name'];
-        $team->description = $data['description'] ?? null;
+        if (array_key_exists('description', $data)) {
+            $team->description = $data['description'];
+        }
 
         if ($request->hasFile('logo')) {
-            // Delete existing logo if in storage
+            $request->validate([
+                'logo' => ['image', 'mimes:jpeg,png,jpg,webp,gif', 'max:5120'],
+            ]);
+
+            // Delete old custom logo if in storage
             if ($team->logo_path && !str_starts_with($team->logo_path, 'images/')) {
                 Storage::disk('public')->delete($team->logo_path);
             }
@@ -43,6 +47,6 @@ class ShopProfileController extends Controller
 
         $team->save();
 
-        return back()->with('success', 'Shop profile updated successfully!');
+        return back()->with('success', 'Nai-save na ang shop profile!');
     }
 }

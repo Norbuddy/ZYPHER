@@ -1,15 +1,15 @@
 <script setup>
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import { Link, usePage, router, useForm } from '@inertiajs/vue3';
 import DialogModal from '@/Components/DialogModal.vue';
 
 const page = usePage();
-const user = page.props.auth?.user;
-const team = user?.current_team;
-const isBranchUser = ['branch_user', 'branch_manager', 'cashier'].includes(user?.role);
-const isCashier = user?.role === 'cashier';
-const isBranchManager = ['branch_user', 'branch_manager'].includes(user?.role)
-    && (user?.role === 'branch_manager' || user?.branch_role === 'manager');
+const user = computed(() => page.props.auth?.user);
+const team = computed(() => page.props.auth?.user?.current_team);
+const isBranchUser = computed(() => ['branch_user', 'branch_manager', 'cashier'].includes(user.value?.role));
+const isCashier = computed(() => user.value?.role === 'cashier');
+const isBranchManager = computed(() => ['branch_user', 'branch_manager'].includes(user.value?.role)
+    && (user.value?.role === 'branch_manager' || user.value?.branch_role === 'manager'));
 
 const dashboardOpen = ref(false);
 
@@ -18,14 +18,15 @@ const logoPreview = ref(null);
 const logoInput = ref(null);
 
 const shopForm = useForm({
-    name: team?.name || '',
-    description: team?.description || '',
+    name: '',
+    description: '',
     logo: null,
 });
 
 const openEditShopModal = () => {
-    shopForm.name = team?.name || '';
-    shopForm.description = team?.description || '';
+    shopForm.clearErrors();
+    shopForm.name = team.value?.name || '';
+    shopForm.description = team.value?.description || '';
     shopForm.logo = null;
     logoPreview.value = null;
     showEditShopModal.value = true;
@@ -50,8 +51,10 @@ const triggerLogoInput = () => {
 const saveShopProfile = () => {
     shopForm.post(route('seller.shop.update'), {
         preserveScroll: true,
+        forceFormData: true,
         onSuccess: () => {
             showEditShopModal.value = false;
+            logoPreview.value = null;
         },
     });
 };
@@ -337,6 +340,12 @@ const logout = () => {
             </template>
             <template #content>
                 <div class="space-y-5">
+                    <!-- Error summary if any -->
+                    <div v-if="Object.keys(shopForm.errors).length > 0" class="p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-xs text-rose-800 space-y-1">
+                        <div class="font-bold">Hindi mai-save ang store profile:</div>
+                        <p v-for="(err, key) in shopForm.errors" :key="key">• {{ err }}</p>
+                    </div>
+
                     <!-- Store Logo / Photo -->
                     <div>
                         <label class="block text-xs font-bold text-[#101114] uppercase tracking-wider mb-2">Store Profile Photo / Logo</label>
