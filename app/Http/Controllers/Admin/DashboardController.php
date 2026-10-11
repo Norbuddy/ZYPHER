@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Enums\OrderShopStatus;
 use App\Enums\ShopStatus;
 use App\Models\OrderShop;
+use App\Models\SellerApplication;
 use App\Models\Team;
 use App\Models\User;
 use Carbon\Carbon;
@@ -23,7 +24,8 @@ class DashboardController extends Controller
             'total_revenue' => (float) OrderShop::where('status', $completed)->sum('subtotal'),
             'total_commission' => (float) OrderShop::where('status', $completed)->sum('platform_fee'),
             'active_shops' => Team::where('status', ShopStatus::Approved)->where('personal_team', false)->count(),
-            'pending_shops' => Team::where('status', ShopStatus::Pending)->count(),
+            'pending_shops' => Team::where('status', ShopStatus::Pending)->where('personal_team', false)->count()
+                + SellerApplication::where('status', 'pending')->count(),
             'total_users' => User::count(),
             'total_orders' => OrderShop::count(),
         ];
