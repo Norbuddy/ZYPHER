@@ -672,7 +672,7 @@ onUnmounted(() => {
 
                         <!-- Review Text -->
                         <p class="text-xs sm:text-sm text-[#101114] leading-relaxed">
-                            {{ rev.comment || 'Maganda ang product at de-kalidad ang tela!' }}
+                            {{ rev.comment || 'Great product quality and excellent material!' }}
                         </p>
 
                         <!-- Attached Media (Images & Videos with Fullscreen Trigger) -->
