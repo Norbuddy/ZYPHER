@@ -1,6 +1,7 @@
 <script setup>
 import { Head, Link, useForm } from '@inertiajs/vue3';
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
+import PolicyModal from '@/Components/PolicyModal.vue';
 
 defineProps({
     canResetPassword: {
@@ -16,11 +17,31 @@ const form = useForm({
     email: '',
     password: '',
     remember: false,
+    terms: false,
 });
 
 const showPassword = ref(false);
+const showPolicyModal = ref(false);
+const policyType = ref('terms');
+const policyTitle = computed(() => policyType.value === 'terms' ? 'Terms of Service' : 'Privacy Policy');
+const termsError = ref('');
+
+const openPolicy = (type) => {
+    policyType.value = type;
+    showPolicyModal.value = true;
+};
+
+const acceptPolicy = () => {
+    form.terms = true;
+    termsError.value = '';
+};
 
 const submit = () => {
+    if (!form.terms) {
+        termsError.value = 'Kailangang basahin at lagyan ng check ang Terms and Privacy Policy bago mag-sign in.';
+        return;
+    }
+    termsError.value = '';
     form.post(route('login'), {
         onFinish: () => form.reset('password'),
     });
@@ -159,19 +180,41 @@ const submit = () => {
                         <p v-if="form.errors.password" class="mt-1.5 text-xs text-[#D85A30]">{{ form.errors.password }}</p>
                     </div>
 
-                    <label class="flex items-center gap-2 pt-1 cursor-pointer select-none">
-                        <input
-                            v-model="form.remember"
-                            type="checkbox"
-                            class="w-4 h-4 rounded border-[#D3D1C7] text-[#6D5EF8] focus:ring-[#6D5EF8]/30"
-                        />
-                        <span class="text-sm text-[#5F5E5A]">Keep me signed in</span>
-                    </label>
+                    <div class="flex items-center justify-between pt-1">
+                        <label class="flex items-center gap-2 cursor-pointer select-none">
+                            <input
+                                v-model="form.remember"
+                                type="checkbox"
+                                class="w-4 h-4 rounded border-[#D3D1C7] text-[#6D5EF8] focus:ring-[#6D5EF8]/30"
+                            />
+                            <span class="text-xs text-[#5F5E5A]">Keep me signed in</span>
+                        </label>
+                    </div>
+
+                    <!-- Mandatory Terms and Privacy Policy Checkbox -->
+                    <div class="pt-2 border-t border-[#F0F0EC]">
+                        <label class="flex items-start gap-2.5 cursor-pointer select-none">
+                            <input
+                                v-model="form.terms"
+                                type="checkbox"
+                                class="w-4 h-4 mt-0.5 rounded border-[#D3D1C7] text-[#6D5EF8] focus:ring-[#6D5EF8]/30"
+                                @change="termsError = ''"
+                            />
+                            <span class="text-xs text-[#5F5E5A] leading-relaxed">
+                                Nabasa at sumasang-ayon ako sa 
+                                <button type="button" @click.prevent="openPolicy('terms')" class="text-[#6D5EF8] font-semibold underline hover:text-[#101114]">Terms of Service</button> 
+                                at 
+                                <button type="button" @click.prevent="openPolicy('policy')" class="text-[#6D5EF8] font-semibold underline hover:text-[#101114]">Privacy Policy</button> 
+                                ng Zypher Marketplace.
+                            </span>
+                        </label>
+                        <p v-if="termsError" class="mt-1.5 text-xs text-[#D85A30] font-medium">{{ termsError }}</p>
+                    </div>
 
                     <button
                         type="submit"
-                        :disabled="form.processing"
-                        class="w-full h-12 mt-2 rounded-xl font-medium text-sm text-white bg-gradient-to-r from-[#6D5EF8] to-[#33D6C8] hover:opacity-90 active:scale-[0.99] transition-all disabled:opacity-60 flex items-center justify-center gap-2"
+                        :disabled="form.processing || !form.terms"
+                        class="w-full h-12 mt-2 rounded-xl font-medium text-sm text-white bg-gradient-to-r from-[#6D5EF8] to-[#33D6C8] hover:opacity-90 active:scale-[0.99] transition-all disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
                     >
                         <span v-if="!form.processing">Sign in</span>
                         <span v-else>Signing in…</span>
@@ -181,13 +224,26 @@ const submit = () => {
                     </button>
                 </form>
 
-                <p class="mt-10 text-xs text-[#B4B2A9] text-center">
-                    By continuing you agree to Zypher's
-                    <a href="#" class="underline hover:text-[#8A8B90]">Terms</a> and
-                    <a href="#" class="underline hover:text-[#8A8B90]">Privacy Policy</a>.
-                </p>
+                <div class="mt-8 text-xs text-[#8A8B90] text-center flex items-center justify-center gap-3">
+                    <button type="button" @click.prevent="openPolicy('terms')" class="hover:text-[#101114] hover:underline">
+                        Terms of Service
+                    </button>
+                    <span>·</span>
+                    <button type="button" @click.prevent="openPolicy('policy')" class="hover:text-[#101114] hover:underline">
+                        Privacy Policy
+                    </button>
+                </div>
             </div>
         </div>
+
+        <!-- TERMS & POLICY MODAL -->
+        <PolicyModal
+            :show="showPolicyModal"
+            :type="policyType"
+            :title="policyTitle"
+            @close="showPolicyModal = false"
+            @accept="acceptPolicy"
+        />
     </div>
 </template>
 

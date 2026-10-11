@@ -3,6 +3,7 @@ import { Link, usePage, router } from '@inertiajs/vue3';
 import { ref, computed } from 'vue';
 import PopupAdModal from '@/Components/PopupAdModal.vue';
 import SearchDssDropdown from '@/Components/SearchDssDropdown.vue';
+import BackLogoutTrapModal from '@/Components/BackLogoutTrapModal.vue';
 
 const page = usePage();
 const user = page.props.auth?.user;
@@ -260,10 +261,16 @@ const logout = () => {
                                 <button
                                     type="button"
                                     @click="menuOpen = !menuOpen"
-                                    class="w-9 h-9 rounded-full bg-[#6D5EF8] text-white flex items-center justify-center text-xs font-bold hover:ring-2 hover:ring-white/30 transition-all cursor-pointer"
+                                    class="w-9 h-9 rounded-full bg-[#6D5EF8] text-white flex items-center justify-center text-xs font-bold hover:ring-2 hover:ring-white/30 transition-all cursor-pointer overflow-hidden"
                                     aria-label="User menu"
                                 >
-                                    {{ user.name?.charAt(0) }}
+                                    <img
+                                        v-if="user.profile_photo_url"
+                                        :src="user.profile_photo_url"
+                                        :alt="user.name"
+                                        class="w-full h-full object-cover"
+                                    />
+                                    <span v-else>{{ user.name?.charAt(0) }}</span>
                                 </button>
 
                                 <div v-if="menuOpen" class="fixed inset-0 z-10" @click="menuOpen = false"></div>
@@ -464,8 +471,14 @@ const logout = () => {
                 >
                     <!-- Authenticated User Banner -->
                     <div v-if="user" class="p-3.5 rounded-2xl bg-white/5 border border-white/10 flex items-center gap-3">
-                        <div class="w-11 h-11 rounded-full bg-[#6D5EF8] text-white flex items-center justify-center font-bold text-sm shrink-0">
-                            {{ user.name?.charAt(0) }}
+                        <div class="w-11 h-11 rounded-full bg-[#6D5EF8] text-white flex items-center justify-center font-bold text-sm shrink-0 overflow-hidden">
+                            <img
+                                v-if="user.profile_photo_url"
+                                :src="user.profile_photo_url"
+                                :alt="user.name"
+                                class="w-full h-full object-cover"
+                            />
+                            <span v-else>{{ user.name?.charAt(0) }}</span>
                         </div>
                         <div class="min-w-0 flex-1">
                             <p class="text-sm font-bold text-white truncate">{{ user.name }}</p>
@@ -657,6 +670,9 @@ const logout = () => {
 
         <!-- POPUP AD MODAL -->
         <PopupAdModal />
+
+        <!-- GLOBAL BACK BUTTON LOGOUT TRAP MODAL -->
+        <BackLogoutTrapModal />
     </div>
 </template>
 

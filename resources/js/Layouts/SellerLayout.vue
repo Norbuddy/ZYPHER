@@ -2,6 +2,7 @@
 import { ref, computed } from 'vue';
 import { Link, usePage, router, useForm } from '@inertiajs/vue3';
 import DialogModal from '@/Components/DialogModal.vue';
+import BackLogoutTrapModal from '@/Components/BackLogoutTrapModal.vue';
 
 const page = usePage();
 const user = computed(() => page.props.auth?.user);
@@ -12,6 +13,7 @@ const isBranchManager = computed(() => ['branch_user', 'branch_manager'].include
     && (user.value?.role === 'branch_manager' || user.value?.branch_role === 'manager'));
 
 const dashboardOpen = ref(false);
+const sidebarOpen = ref(false);
 
 const showEditShopModal = ref(false);
 const logoPreview = ref(null);
@@ -85,7 +87,6 @@ const handleLogoChange = (e) => {
         };
         reader.readAsDataURL(file);
     } catch (err) {
-        // Fallback to original file if canvas not supported
         shopForm.logo = file;
     }
 };
@@ -152,37 +153,28 @@ const isDashboardActive = () => {
 
 const goToDashboard = (item) => {
     dashboardOpen.value = true;
+    sidebarOpen.value = false;
 
     if (item.params) {
-        router.get(
-            route(item.route),
-            item.params,
-            {
-                preserveScroll: true,
-                preserveState: true,
-            }
-        );
+        router.get(route(item.route), item.params, { preserveScroll: true, preserveState: true });
     } else {
-        router.get(
-            route(item.route),
-            {},
-            {
-                preserveScroll: true,
-                preserveState: true,
-            }
-        );
+        router.get(route(item.route), {}, { preserveScroll: true, preserveState: true });
     }
 };
 
 const logout = () => {
     router.post(route('logout'));
 };
+
+router.on('navigate', () => {
+    sidebarOpen.value = false;
+});
 </script>
 
 <template>
-    <div class="min-h-screen bg-[#F7F7F5] flex">
-        <!-- SLEEK DARK SIDEBAR -->
-        <aside class="w-64 shrink-0 bg-[#0B0D11] text-white min-h-screen p-5 flex flex-col border-r border-white/5">
+    <div class="min-h-screen bg-[#F7F7F5] flex flex-col lg:flex-row">
+        <!-- DESKTOP STICKY SIDEBAR -->
+        <aside class="hidden lg:flex w-64 shrink-0 bg-[#0B0D11] text-white min-h-screen p-5 flex-col border-r border-white/5 sticky top-0 h-screen">
             <!-- LOGO -->
             <Link
                 :href="route(isCashier ? 'seller.pos.index' : 'seller.dashboard')"
@@ -205,7 +197,7 @@ const logout = () => {
             <button
                 type="button"
                 @click="openEditShopModal"
-                class="w-full text-left px-3 py-2.5 rounded-xl bg-white/5 border border-white/5 mb-6 hover:bg-white/10 hover:border-white/20 transition-all group select-none"
+                class="w-full text-left px-3 py-2.5 rounded-xl bg-white/5 border border-white/5 mb-6 hover:bg-white/10 hover:border-white/20 transition-all group select-none cursor-pointer"
                 title="Click to edit store profile & logo"
             >
                 <div class="flex items-center justify-between">
@@ -262,41 +254,21 @@ const logout = () => {
                         </svg>
                     </button>
 
-                    <div
-                        v-if="dashboardOpen"
-                        class="mt-1 ml-4 pl-3 border-l border-white/10 space-y-1"
-                    >
+                    <div v-if="dashboardOpen" class="mt-1 ml-4 pl-3 border-l border-white/10 space-y-1">
                         <button
                             v-for="item in dashboardRoutes"
-                            :key="item.label"
+                            :key="item.route"
                             type="button"
                             @click="goToDashboard(item)"
                             class="w-full text-left px-3 py-2 rounded-lg text-xs transition-colors"
-                            :class="!item.params && !page.url.includes('?source=')
-                                ? 'text-white bg-white/15 font-medium'
-                                : 'text-white/50 hover:text-white hover:bg-white/5'"
+                            :class="isActive(item.route) ? 'bg-white/15 text-white font-medium' : 'text-white/50 hover:text-white hover:bg-white/5'"
                         >
                             {{ item.label }}
                         </button>
                     </div>
                 </div>
 
-                <!-- STAFF FOR BRANCH MANAGER -->
-                <Link
-                    v-if="isBranchManager"
-                    :href="route('branch.staff.index')"
-                    class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-medium transition-all duration-200"
-                    :class="isActive('branch.staff')
-                        ? 'bg-white text-[#0B0D11] font-semibold shadow-xs'
-                        : 'text-white/65 hover:text-white hover:bg-white/5'"
-                >
-                    <svg class="w-4 h-4 shrink-0 opacity-80" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-                    </svg>
-                    <span>Staff</span>
-                </Link>
-
-                <!-- OTHER NAV ITEMS -->
+                <!-- NAV ITEMS -->
                 <Link
                     v-for="item in navItems"
                     :key="item.route"
@@ -332,8 +304,14 @@ const logout = () => {
                 </Link>
 
                 <div class="flex items-center gap-2.5 p-2 rounded-xl bg-white/5 border border-white/5">
-                    <div class="w-8 h-8 rounded-full bg-white text-[#0B0D11] flex items-center justify-center text-xs font-bold shrink-0">
-                        {{ user?.name?.charAt(0) || 'S' }}
+                    <div class="w-8 h-8 rounded-full bg-white text-[#0B0D11] flex items-center justify-center text-xs font-bold shrink-0 overflow-hidden">
+                        <img
+                            v-if="user?.profile_photo_url"
+                            :src="user.profile_photo_url"
+                            :alt="user.name"
+                            class="w-full h-full object-cover"
+                        />
+                        <span v-else>{{ user?.name?.charAt(0) || 'S' }}</span>
                     </div>
                     <div class="min-w-0 flex-1">
                         <p class="text-xs font-semibold text-white truncate">{{ user?.name }}</p>
@@ -343,7 +321,7 @@ const logout = () => {
 
                 <button
                     @click="logout"
-                    class="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-xs font-medium text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 transition-colors"
+                    class="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-xs font-medium text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 transition-colors cursor-pointer"
                 >
                     <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
@@ -353,25 +331,149 @@ const logout = () => {
             </div>
         </aside>
 
+        <!-- MOBILE SLIDE-IN OFF-CANVAS SIDEBAR -->
+        <transition
+            enter-active-class="transition-opacity duration-200"
+            enter-from-class="opacity-0"
+            enter-to-class="opacity-100"
+            leave-active-class="transition-opacity duration-150"
+            leave-from-class="opacity-100"
+            leave-to-class="opacity-0"
+        >
+            <div
+                v-if="sidebarOpen"
+                class="fixed inset-0 bg-black/60 backdrop-blur-xs z-40 lg:hidden"
+                @click="sidebarOpen = false"
+            ></div>
+        </transition>
+
+        <transition
+            enter-active-class="transition-transform duration-200 ease-out"
+            enter-from-class="-translate-x-full"
+            enter-to-class="translate-x-0"
+            leave-active-class="transition-transform duration-150 ease-in"
+            leave-from-class="translate-x-0"
+            leave-to-class="-translate-x-full"
+        >
+            <aside
+                v-if="sidebarOpen"
+                class="fixed inset-y-0 left-0 z-50 w-72 bg-[#0B0D11] text-white p-5 flex flex-col shadow-2xl lg:hidden overflow-y-auto"
+            >
+                <div class="flex items-center justify-between mb-4">
+                    <Link :href="route(isCashier ? 'seller.pos.index' : 'seller.dashboard')" @click="sidebarOpen = false" class="flex items-center gap-2.5">
+                        <svg viewBox="0 0 200 130" class="h-6 w-auto fill-white shrink-0">
+                            <path d="M155 12 L45 12 L58 34 L47 55 L138 55 L20 88 L8 108 L118 108 L105 86 L116 65 L25 65 L143 32 Z" />
+                        </svg>
+                        <span class="font-bold tracking-tight text-white text-base">Zypher Seller</span>
+                    </Link>
+
+                    <button
+                        type="button"
+                        @click="sidebarOpen = false"
+                        class="p-2 text-white/60 hover:text-white rounded-lg"
+                        aria-label="Close"
+                    >
+                        ✕
+                    </button>
+                </div>
+
+                <div class="px-2 mb-4">
+                    <span class="text-[10px] font-semibold uppercase tracking-wider text-white/40 bg-white/5 px-2 py-0.5 rounded-full border border-white/10">
+                        {{ isBranchUser ? 'Branch Portal' : 'Seller Portal' }}
+                    </span>
+                </div>
+
+                <!-- NAVIGATION -->
+                <nav class="space-y-1 flex-1 overflow-y-auto">
+                    <div v-if="!isCashier">
+                        <button
+                            type="button"
+                            @click="dashboardOpen = !dashboardOpen"
+                            class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-medium"
+                            :class="isDashboardActive() ? 'bg-white text-[#0B0D11] font-semibold' : 'text-white/70 hover:bg-white/10'"
+                        >
+                            <span>Dashboard</span>
+                            <span class="text-xs">{{ dashboardOpen ? '▲' : '▼' }}</span>
+                        </button>
+                        <div v-if="dashboardOpen" class="mt-1 ml-4 pl-3 border-l border-white/10 space-y-1">
+                            <button
+                                v-for="item in dashboardRoutes"
+                                :key="item.route"
+                                type="button"
+                                @click="goToDashboard(item)"
+                                class="w-full text-left px-3 py-2 rounded-lg text-xs"
+                                :class="isActive(item.route) ? 'bg-white/15 text-white font-medium' : 'text-white/50'"
+                            >
+                                {{ item.label }}
+                            </button>
+                        </div>
+                    </div>
+
+                    <Link
+                        v-for="item in navItems"
+                        :key="item.route"
+                        :href="route(item.route)"
+                        @click="sidebarOpen = false"
+                        class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-medium"
+                        :class="isActive(item.route) ? 'bg-white text-[#0B0D11] font-semibold' : 'text-white/70 hover:bg-white/10'"
+                    >
+                        <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" :d="item.icon" />
+                        </svg>
+                        <span>{{ item.label }}</span>
+                    </Link>
+                </nav>
+
+                <div class="pt-4 mt-auto border-t border-white/10 space-y-2">
+                    <Link
+                        v-if="!isBranchUser"
+                        :href="route('home')"
+                        @click="sidebarOpen = false"
+                        class="block px-3 py-2 rounded-xl text-xs text-white/60 hover:text-white"
+                    >
+                        &larr; Back to Storefront
+                    </Link>
+                    <button
+                        @click="logout"
+                        class="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-xs font-medium text-rose-400 hover:bg-rose-500/10"
+                    >
+                        <span>Log Out</span>
+                    </button>
+                </div>
+            </aside>
+        </transition>
+
         <!-- MAIN CONTENT AREA -->
         <div class="flex-1 flex flex-col min-w-0">
             <!-- TOP BAR -->
-            <header class="h-16 bg-white border-b border-[#EAEAE5] px-8 flex items-center justify-between sticky top-0 z-30">
+            <header class="h-16 bg-white border-b border-[#EAEAE5] px-4 sm:px-6 lg:px-8 flex items-center justify-between sticky top-0 z-30 shadow-2xs">
                 <div class="flex items-center gap-3">
-                    <span class="text-xs font-medium text-[#8A8B90]">{{ team?.name || 'Seller Center' }}</span>
+                    <!-- Mobile Hamburger -->
+                    <button
+                        type="button"
+                        @click="sidebarOpen = true"
+                        class="lg:hidden p-2 -ml-2 text-[#101114] hover:bg-[#F7F7F5] rounded-xl transition cursor-pointer"
+                        aria-label="Open Sidebar"
+                    >
+                        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                        </svg>
+                    </button>
+
+                    <span class="text-xs font-medium text-[#8A8B90] truncate max-w-[150px] sm:max-w-none">{{ team?.name || 'Seller Center' }}</span>
                     <span class="text-xs text-[#EAEAE5]">/</span>
                     <span class="text-xs font-semibold text-[#101114]">Management Portal</span>
                 </div>
 
-                <div class="flex items-center gap-4">
+                <div class="flex items-center gap-3">
                     <div class="flex items-center gap-2 text-xs font-medium text-[#101114] bg-[#F7F7F5] px-3 py-1.5 rounded-full border border-[#EAEAE5]">
                         <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
-                        <span>Shop Active</span>
+                        <span class="hidden sm:inline">Shop Active</span>
                     </div>
                 </div>
             </header>
 
-            <main class="flex-1 p-8 overflow-y-auto">
+            <main class="flex-1 p-4 sm:p-6 lg:p-8 overflow-y-auto">
                 <slot />
             </main>
         </div>
@@ -391,19 +493,22 @@ const logout = () => {
                     </a>
                 </div>
             </template>
-            <template #content>
-                <div class="space-y-5">
-                    <!-- Error summary if any -->
-                    <div v-if="Object.keys(shopForm.errors).length > 0" class="p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-xs text-rose-800 space-y-1">
-                        <div class="font-bold">Hindi mai-save ang store profile:</div>
-                        <p v-for="(err, key) in shopForm.errors" :key="key">• {{ err }}</p>
-                    </div>
 
-                    <!-- Store Logo / Photo -->
+            <template #content>
+                <form @submit.prevent="saveShopProfile" class="space-y-4">
+                    <!-- STORE LOGO -->
                     <div>
-                        <label class="block text-xs font-bold text-[#101114] uppercase tracking-wider mb-2">Store Profile Photo / Logo</label>
+                        <label class="block text-xs font-bold text-[#101114] uppercase tracking-wider mb-2">Store Logo</label>
+                        <input
+                            ref="logoInput"
+                            type="file"
+                            accept="image/*"
+                            class="hidden"
+                            @change="handleLogoChange"
+                        />
+
                         <div class="flex items-center gap-4">
-                            <div class="w-16 h-16 rounded-full bg-[#101114] text-white font-bold text-xl flex items-center justify-center overflow-hidden border border-gray-200 shrink-0">
+                            <div class="w-16 h-16 rounded-2xl bg-[#0F1115] text-white flex items-center justify-center font-bold text-lg overflow-hidden border border-[#EAEAE5] shadow-xs shrink-0">
                                 <img
                                     v-if="logoPreview"
                                     :src="logoPreview"
@@ -414,72 +519,72 @@ const logout = () => {
                                     :src="(team.logo_path.startsWith('images/') || team.logo_path.startsWith('http') ? (team.logo_path.startsWith('http') ? team.logo_path : '/' + team.logo_path) : '/storage/' + team.logo_path)"
                                     class="w-full h-full object-cover"
                                 />
-                                <span v-else>{{ team?.name?.charAt(0) || 'S' }}</span>
+                                <span v-else>{{ (shopForm.name || team?.name || 'S').charAt(0) }}</span>
                             </div>
 
                             <div>
-                                <input
-                                    ref="logoInput"
-                                    type="file"
-                                    accept="image/*"
-                                    class="hidden"
-                                    @change="handleLogoChange"
-                                />
                                 <button
                                     type="button"
                                     @click="triggerLogoInput"
-                                    class="px-3.5 py-2 rounded-xl border border-[#E4E4E0] hover:border-black text-xs font-semibold text-[#101114] bg-white hover:bg-[#F7F7F5] transition-colors"
+                                    class="px-3 py-1.5 rounded-xl border border-[#E4E4E0] hover:border-[#101114] text-xs font-semibold text-[#101114] bg-white transition shadow-2xs"
                                 >
-                                    Change Store Photo
+                                    Change Logo
                                 </button>
-                                <p class="text-[10px] text-[#8A8B90] mt-1.5">Recommended: 400x400 square image (PNG, JPG, WebP max 3MB)</p>
+                                <p class="text-[11px] text-[#8A8B90] mt-1">Recommended square format, JPG/PNG (max 2MB)</p>
                             </div>
                         </div>
+                        <p v-if="shopForm.errors.logo" class="text-xs text-rose-600 mt-1">{{ shopForm.errors.logo }}</p>
                     </div>
 
-                    <!-- Store Name -->
+                    <!-- STORE NAME -->
                     <div>
-                        <label class="block text-xs font-bold text-[#101114] uppercase tracking-wider mb-1.5">Store Name</label>
+                        <label class="block text-xs font-bold text-[#101114] uppercase tracking-wider mb-2">Store Name</label>
                         <input
                             v-model="shopForm.name"
                             type="text"
                             required
-                            class="w-full rounded-xl border border-[#E4E4E0] p-2.5 text-xs text-[#101114] focus:border-black focus:ring-0 outline-none"
-                            placeholder="e.g. Norbuddy's Apparel"
+                            class="w-full rounded-xl border border-[#E4E4E0] px-3.5 py-2.5 text-xs text-[#101114] focus:border-[#101114] focus:ring-0 outline-none"
+                            placeholder="Enter store name..."
                         />
                         <p v-if="shopForm.errors.name" class="text-xs text-rose-600 mt-1">{{ shopForm.errors.name }}</p>
                     </div>
 
-                    <!-- Store Description / Tagline -->
+                    <!-- STORE DESCRIPTION -->
                     <div>
-                        <label class="block text-xs font-bold text-[#101114] uppercase tracking-wider mb-1.5">Store Tagline / Description</label>
+                        <label class="block text-xs font-bold text-[#101114] uppercase tracking-wider mb-2">Store Description & Tagline</label>
                         <textarea
                             v-model="shopForm.description"
                             rows="3"
-                            class="w-full rounded-xl border border-[#E4E4E0] p-2.5 text-xs text-[#101114] focus:border-black focus:ring-0 outline-none"
-                            placeholder="e.g. Independent streetwear and apparel shop..."
+                            class="w-full rounded-xl border border-[#E4E4E0] p-3 text-xs text-[#101114] focus:border-[#101114] focus:ring-0 outline-none"
+                            placeholder="Briefly describe your shop, specialties, and location..."
                         ></textarea>
                         <p v-if="shopForm.errors.description" class="text-xs text-rose-600 mt-1">{{ shopForm.errors.description }}</p>
                     </div>
+                </form>
+            </template>
+
+            <template #footer>
+                <div class="flex items-center justify-end gap-2">
+                    <button
+                        type="button"
+                        @click="closeEditShopModal"
+                        class="rounded-xl border border-[#E4E4E0] px-4 py-2 text-xs font-semibold text-[#5F5E5A] hover:bg-[#F7F7F5] transition"
+                    >
+                        Cancel
+                    </button>
+                    <button
+                        type="button"
+                        @click="saveShopProfile"
+                        :disabled="shopForm.processing"
+                        class="rounded-xl bg-[#101114] hover:bg-black px-5 py-2 text-xs font-bold text-white transition disabled:opacity-50"
+                    >
+                        {{ shopForm.processing ? 'Saving...' : 'Save Store Details' }}
+                    </button>
                 </div>
             </template>
-            <template #footer>
-                <button
-                    type="button"
-                    @click="closeEditShopModal"
-                    class="rounded-xl border border-[#E4E4E0] px-4 py-2 text-xs font-medium text-[#5F5E5A] hover:bg-[#F7F7F5]"
-                >
-                    Cancel
-                </button>
-                <button
-                    type="button"
-                    @click="saveShopProfile"
-                    :disabled="shopForm.processing"
-                    class="rounded-xl bg-[#101114] px-5 py-2 text-xs font-bold text-white hover:bg-black ml-2 disabled:opacity-50"
-                >
-                    {{ shopForm.processing ? 'Saving...' : 'Save Changes' }}
-                </button>
-            </template>
         </DialogModal>
+
+        <!-- GLOBAL BACK BUTTON LOGOUT TRAP MODAL -->
+        <BackLogoutTrapModal />
     </div>
 </template>

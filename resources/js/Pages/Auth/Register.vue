@@ -1,5 +1,7 @@
 <script setup>
 import { Head, Link, useForm } from '@inertiajs/vue3';
+import { ref, computed } from 'vue';
+import PolicyModal from '@/Components/PolicyModal.vue';
 
 const form = useForm({
     name: '',
@@ -9,7 +11,27 @@ const form = useForm({
     terms: false,
 });
 
+const showPolicyModal = ref(false);
+const policyType = ref('terms');
+const policyTitle = computed(() => policyType.value === 'terms' ? 'Terms of Service' : 'Privacy Policy');
+const termsError = ref('');
+
+const openPolicy = (type) => {
+    policyType.value = type;
+    showPolicyModal.value = true;
+};
+
+const acceptPolicy = () => {
+    form.terms = true;
+    termsError.value = '';
+};
+
 const submit = () => {
+    if (!form.terms) {
+        termsError.value = 'Kailangang basahin at lagyan ng check ang Terms and Privacy Policy bago lumikha ng account.';
+        return;
+    }
+    termsError.value = '';
     form.post(route('register'), {
         onFinish: () => form.reset('password', 'password_confirmation'),
     });
@@ -111,22 +133,46 @@ const submit = () => {
                         />
                     </div>
 
-                    <label class="flex items-start gap-2 pt-1 cursor-pointer select-none">
-                        <input v-model="form.terms" type="checkbox" required class="w-4 h-4 mt-0.5 rounded border-[#D3D1C7] text-[#6D5EF8] focus:ring-[#6D5EF8]/30" />
-                        <span class="text-sm text-[#5F5E5A]">
-                            I agree to Zypher's <a href="#" class="underline">Terms</a> and <a href="#" class="underline">Privacy Policy</a>.
-                        </span>
-                    </label>
+                    <!-- Mandatory Terms and Privacy Policy Checkbox -->
+                    <div class="pt-1">
+                        <label class="flex items-start gap-2.5 cursor-pointer select-none">
+                            <input
+                                v-model="form.terms"
+                                type="checkbox"
+                                class="w-4 h-4 mt-0.5 rounded border-[#D3D1C7] text-[#6D5EF8] focus:ring-[#6D5EF8]/30"
+                                @change="termsError = ''"
+                            />
+                            <span class="text-xs text-[#5F5E5A] leading-relaxed">
+                                Nabasa at sumasang-ayon ako sa 
+                                <button type="button" @click.prevent="openPolicy('terms')" class="text-[#6D5EF8] font-semibold underline hover:text-[#101114]">Terms of Service</button> 
+                                at 
+                                <button type="button" @click.prevent="openPolicy('policy')" class="text-[#6D5EF8] font-semibold underline hover:text-[#101114]">Privacy Policy</button> 
+                                ng Zypher Marketplace.
+                            </span>
+                        </label>
+                        <p v-if="termsError" class="mt-1.5 text-xs text-[#D85A30] font-medium">{{ termsError }}</p>
+                        <p v-if="form.errors.terms" class="mt-1.5 text-xs text-[#D85A30] font-medium">{{ form.errors.terms }}</p>
+                    </div>
 
                     <button
-                        type="submit" :disabled="form.processing"
-                        class="w-full h-12 mt-2 rounded-xl font-medium text-sm text-white bg-gradient-to-r from-[#6D5EF8] to-[#33D6C8] hover:opacity-90 active:scale-[0.99] transition-all disabled:opacity-60"
+                        type="submit"
+                        :disabled="form.processing || !form.terms"
+                        class="w-full h-12 mt-2 rounded-xl font-medium text-sm text-white bg-gradient-to-r from-[#6D5EF8] to-[#33D6C8] hover:opacity-90 active:scale-[0.99] transition-all disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
                     >
-                        {{ form.processing ? 'Creating account…' : 'Create account' }}
+                        <span>{{ form.processing ? 'Creating account…' : 'Create account' }}</span>
                     </button>
                 </form>
             </div>
         </div>
+
+        <!-- TERMS & POLICY MODAL -->
+        <PolicyModal
+            :show="showPolicyModal"
+            :type="policyType"
+            :title="policyTitle"
+            @close="showPolicyModal = false"
+            @accept="acceptPolicy"
+        />
     </div>
 </template>
 

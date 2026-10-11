@@ -1,11 +1,13 @@
 <script setup>
+import { ref, onMounted, onUnmounted } from 'vue';
 import { Link, usePage, router } from '@inertiajs/vue3';
-import { onMounted, onUnmounted } from 'vue';
 import Banner from '@/Components/Banner.vue';
+import BackLogoutTrapModal from '@/Components/BackLogoutTrapModal.vue';
 
 const page = usePage();
 const supplierName = page.props.auth?.user?.current_team?.name || page.props.auth?.user?.name || 'Supplier Brand';
 const notifications = page.props.supplierNotifications || { unread_messages: 0, pending_orders: 0 };
+const sidebarOpen = ref(false);
 
 const navItems = [
     {
@@ -70,12 +72,16 @@ const isActive = (routeName) => route().current(routeName + '*');
 const logout = () => {
     router.post(route('logout'));
 };
+
+router.on('navigate', () => {
+    sidebarOpen.value = false;
+});
 </script>
 
 <template>
-    <div class="min-h-screen bg-[#F8F9FA] flex flex-col md:flex-row">
-        <!-- Dark Sidebar matching Mockup -->
-        <aside class="w-full md:w-64 shrink-0 bg-[#0B0D11] text-white min-h-screen md:min-h-screen p-5 flex flex-col justify-between border-r border-[#1C2028]">
+    <div class="min-h-screen bg-[#F8F9FA] flex flex-col lg:flex-row">
+        <!-- DESKTOP FIXED SIDEBAR -->
+        <aside class="hidden lg:flex w-64 shrink-0 bg-[#0B0D11] text-white min-h-screen p-5 flex-col justify-between border-r border-[#1C2028] sticky top-0 h-screen">
             <div>
                 <!-- Brand / Logo -->
                 <div class="flex items-center justify-between mb-8 pb-4 border-b border-[#1A1F29]">
@@ -98,53 +104,133 @@ const logout = () => {
                         :href="route(item.route)"
                         class="flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-medium transition-all group"
                         :class="isActive(item.route)
-                            ? 'bg-white/10 text-white font-semibold shadow-sm'
-                            : 'text-gray-400 hover:text-white hover:bg-white/5'"
+                            ? 'bg-[#1D212B] text-white shadow-xs'
+                            : 'text-gray-400 hover:text-white hover:bg-[#141820]'"
                     >
                         <div class="flex items-center gap-3">
-                            <svg class="h-4 w-4 shrink-0 transition" :class="isActive(item.route) ? 'text-white' : 'text-gray-400 group-hover:text-white'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" :d="item.icon" />
+                            <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" :d="item.icon" />
                             </svg>
                             <span>{{ item.label }}</span>
                         </div>
-                        <span
-                            v-if="item.badge > 0"
-                            :class="`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-bold ${item.badgeClass}`"
-                        >
+                        <span v-if="item.badge" :class="item.badgeClass" class="text-[10px] font-bold px-2 py-0.5 rounded-full">
                             {{ item.badge }}
                         </span>
                     </Link>
                 </nav>
             </div>
 
-            <!-- Profile & Logout Footer -->
-            <div class="pt-4 border-t border-[#1A1F29] space-y-3">
-                <div class="flex items-center gap-3 px-2 py-1.5 rounded-xl bg-white/5 border border-white/5">
-                    <div class="flex h-8 w-8 items-center justify-center rounded-full bg-slate-800 text-xs font-bold text-white uppercase">
-                        {{ supplierName?.charAt(0) || 'S' }}
+            <!-- Footer User Info -->
+            <div class="pt-4 border-t border-[#1C2028]">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-2.5 min-w-0">
+                        <div class="w-8 h-8 rounded-full bg-[#1D212B] text-white flex items-center justify-center text-xs font-bold shrink-0">
+                            {{ supplierName.charAt(0) }}
+                        </div>
+                        <div class="min-w-0">
+                            <p class="text-xs font-semibold text-white truncate">{{ supplierName }}</p>
+                            <p class="text-[10px] text-gray-400 truncate">Supplier</p>
+                        </div>
                     </div>
-                    <div class="min-w-0 flex-1">
-                        <p class="text-xs font-semibold text-white truncate">{{ supplierName }}</p>
-                        <p class="text-[10px] text-gray-400">Supplier Account</p>
-                    </div>
+                    <button @click="logout" class="text-gray-400 hover:text-rose-400 p-1.5 transition cursor-pointer" title="Sign out">
+                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                        </svg>
+                    </button>
                 </div>
-                <button
-                    type="button"
-                    @click="logout"
-                    class="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-xs text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 transition"
-                >
-                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                    </svg>
-                    <span>Log Out</span>
-                </button>
             </div>
         </aside>
 
-        <!-- Main Content Area -->
-        <main class="flex-1 p-6 md:p-8 overflow-y-auto">
-            <Banner />
-            <slot />
-        </main>
+        <!-- MOBILE SLIDE-IN DRAWER -->
+        <transition
+            enter-active-class="transition-opacity duration-200"
+            enter-from-class="opacity-0"
+            enter-to-class="opacity-100"
+            leave-active-class="transition-opacity duration-150"
+            leave-from-class="opacity-100"
+            leave-to-class="opacity-0"
+        >
+            <div
+                v-if="sidebarOpen"
+                class="fixed inset-0 bg-black/60 backdrop-blur-xs z-40 lg:hidden"
+                @click="sidebarOpen = false"
+            ></div>
+        </transition>
+
+        <transition
+            enter-active-class="transition-transform duration-200 ease-out"
+            enter-from-class="-translate-x-full"
+            enter-to-class="translate-x-0"
+            leave-active-class="transition-transform duration-150 ease-in"
+            leave-from-class="translate-x-0"
+            leave-to-class="-translate-x-full"
+        >
+            <aside
+                v-if="sidebarOpen"
+                class="fixed inset-y-0 left-0 z-50 w-72 bg-[#0B0D11] text-white p-5 flex flex-col shadow-2xl lg:hidden overflow-y-auto"
+            >
+                <div class="flex items-center justify-between mb-6">
+                    <Link :href="route('supplier.dashboard')" @click="sidebarOpen = false" class="flex items-center gap-2.5">
+                        <svg viewBox="0 0 200 130" class="h-6 w-auto fill-white">
+                            <path d="M155 12 L45 12 L58 34 L47 55 L138 55 L20 88 L8 108 L118 108 L105 86 L116 65 L25 65 L143 32 Z" />
+                        </svg>
+                        <span class="font-bold text-base text-white">Supplier Portal</span>
+                    </Link>
+                    <button type="button" @click="sidebarOpen = false" class="p-2 text-white/60">✕</button>
+                </div>
+
+                <nav class="space-y-1 flex-1 overflow-y-auto">
+                    <Link
+                        v-for="item in navItems"
+                        :key="item.route"
+                        :href="route(item.route)"
+                        @click="sidebarOpen = false"
+                        class="flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-medium"
+                        :class="isActive(item.route) ? 'bg-[#1D212B] text-white' : 'text-gray-400 hover:bg-[#141820]'"
+                    >
+                        <div class="flex items-center gap-3">
+                            <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" :d="item.icon" />
+                            </svg>
+                            <span>{{ item.label }}</span>
+                        </div>
+                    </Link>
+                </nav>
+
+                <div class="pt-4 border-t border-[#1C2028]">
+                    <button @click="logout" class="w-full flex items-center justify-center gap-2 text-xs text-rose-400 py-2">
+                        Sign Out
+                    </button>
+                </div>
+            </aside>
+        </transition>
+
+        <!-- MAIN AREA -->
+        <div class="flex-1 flex flex-col min-w-0">
+            <!-- Mobile Top Bar -->
+            <header class="h-16 bg-white border-b border-[#EAEAE5] px-4 sm:px-6 lg:px-8 flex items-center justify-between sticky top-0 z-30">
+                <div class="flex items-center gap-3">
+                    <button
+                        type="button"
+                        @click="sidebarOpen = true"
+                        class="lg:hidden p-2 -ml-2 text-[#101114] hover:bg-[#F7F7F5] rounded-xl"
+                        aria-label="Open Sidebar"
+                    >
+                        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                        </svg>
+                    </button>
+                    <span class="text-xs font-semibold text-[#101114]">Supplier Portal</span>
+                </div>
+            </header>
+
+            <main class="flex-1 p-4 sm:p-6 lg:p-8 overflow-y-auto">
+                <Banner />
+                <slot />
+            </main>
+        </div>
+
+        <!-- GLOBAL BACK BUTTON LOGOUT TRAP MODAL -->
+        <BackLogoutTrapModal />
     </div>
 </template>

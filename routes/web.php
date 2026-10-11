@@ -65,7 +65,14 @@
         'verified',
     ])->group(function () {
         Route::get('/dashboard', function () {
-            return Inertia::render('Dashboard');
+            $user = request()->user();
+            if ($user?->is_admin || $user?->role === 'admin') {
+                return redirect()->route('admin.dashboard');
+            }
+            if (in_array($user?->role, ['seller', 'branch_user', 'branch_manager', 'cashier'])) {
+                return redirect()->route('seller.dashboard');
+            }
+            return redirect()->route('home');
         })->name('dashboard');
 
         Route::get('/branch/pending', function () {
