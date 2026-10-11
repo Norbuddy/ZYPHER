@@ -1,0 +1,53 @@
+name: Build and Deploy Zypher to Azure
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: mbstring, xml, ctype, iconv, intl, pdo_mysql, dom, filter, json, bcmath, curl, zip
+          coverage: none
+
+      - name: Install Composer Dependencies
+        run: composer install --no-dev --optimize-autoloader --prefer-dist --no-interaction
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install NPM Dependencies & Build Assets
+        run: |
+          npm ci
+          npm run build
+
+      - name: Prepare Deployment Artifact
+        run: |
+          mkdir -p deployment
+          rsync -av --exclude='.git' \
+                    --exclude='.github' \
+                    --exclude='node_modules' \
+                    --exclude='tests' \
+                    ./ deployment/
+        shell: bash
+
+      - name: Deploy to Azure Web App
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: ${{ secrets.AZURE_WEBAPP_NAME }}
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+          package: deployment
