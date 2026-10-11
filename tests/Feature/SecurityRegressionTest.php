@@ -92,4 +92,30 @@ class SecurityRegressionTest extends TestCase
         $response = $this->get('/admin/branch-application/999/bir-document');
         $this->assertTrue(in_array($response->getStatusCode(), [302, 401, 403]));
     }
+
+    /**
+     * Admin Protection Test:
+     * Unauthenticated users cannot export order or payout CSV reports.
+     */
+    public function test_unauthenticated_users_cannot_export_reports(): void
+    {
+        $orderExport = $this->get('/admin/orders/export');
+        $this->assertTrue(in_array($orderExport->getStatusCode(), [302, 401, 403]));
+
+        $payoutExport = $this->get('/admin/payouts/export');
+        $this->assertTrue(in_array($payoutExport->getStatusCode(), [302, 401, 403]));
+    }
+
+    /**
+     * Admin Protection Test:
+     * Voucher management routes are protected by is.admin middleware.
+     */
+    public function test_voucher_management_routes_are_protected_by_admin_middleware(): void
+    {
+        foreach (['admin.vouchers.toggle-status', 'admin.vouchers.destroy'] as $routeName) {
+            $route = Route::getRoutes()->getByName($routeName);
+            $this->assertNotNull($route, "Route {$routeName} must be defined.");
+            $this->assertContains('is.admin', $route->gatherMiddleware());
+        }
+    }
 }

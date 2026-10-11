@@ -54,4 +54,19 @@ class VoucherController extends Controller
 
         return back()->with('success', 'Platform voucher created.');
     }
+
+    public function toggleStatus(Voucher $voucher): RedirectResponse
+    {
+        $newStatus = $voucher->status === 'active' ? 'inactive' : 'active';
+        $voucher->update(['status' => $newStatus]);
+
+        return back()->with('success', "Voucher {$voucher->code} is now {$newStatus}.");
+    }
+
+    public function destroy(Voucher $voucher): RedirectResponse
+    {
+        $voucher->delete();
+
+        return back()->with('success', "Voucher {$voucher->code} has been deleted.");
+    }
 }

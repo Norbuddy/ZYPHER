@@ -14,7 +14,15 @@ const refund = (id) => {
     <AdminLayout>
         <Head title="Orders" />
 
-        <h1 class="text-xl font-semibold text-[#101114] mb-6">All Orders</h1>
+        <div class="flex items-center justify-between mb-6">
+            <h1 class="text-xl font-semibold text-[#101114]">All Orders</h1>
+            <a
+                :href="route('admin.orders.export')"
+                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[#E4E4E0] bg-white text-xs font-medium text-[#101114] hover:bg-[#F7F7F5] transition shadow-sm"
+            >
+                <span>📥</span> Export CSV
+            </a>
+        </div>
 
         <div class="bg-white rounded-xl border border-[#E4E4E0] overflow-hidden">
             <table class="w-full text-sm">

@@ -1,6 +1,6 @@
 <script setup>
 import AdminLayout from '@/Layouts/AdminLayout.vue'
-import { Head, useForm } from '@inertiajs/vue3'
+import { Head, useForm, router } from '@inertiajs/vue3'
 import { ref } from 'vue'
 import DataTable from '@/Components/DataTable.vue'
 
@@ -99,7 +99,25 @@ const voucherColumns = [
         key: 'status',
         label: 'Status',
     },
+
+    {
+        key: 'actions',
+        label: 'Actions',
+    },
 ]
+
+const toggleVoucher = (voucher) => {
+    const action = voucher.status === 'active' ? 'deactivate' : 'activate'
+    if (confirm(`Are you sure you want to ${action} voucher ${voucher.code}?`)) {
+        router.patch(route('admin.vouchers.toggle-status', voucher.id), {}, { preserveScroll: true })
+    }
+}
+
+const deleteVoucher = (voucher) => {
+    if (confirm(`Are you sure you want to delete voucher ${voucher.code}?`)) {
+        router.delete(route('admin.vouchers.destroy', voucher.id), { preserveScroll: true })
+    }
+}
 </script>
 
 <template>
@@ -433,6 +451,27 @@ const voucherColumns = [
                     {{ formatStatus(row.status) }}
                 </span>
 
+            </template>
+
+            <!-- ACTIONS -->
+            <template #cell-actions="{ row }">
+                <div class="flex items-center gap-2">
+                    <button
+                        type="button"
+                        @click="toggleVoucher(row)"
+                        class="text-xs font-medium px-2 py-1 rounded border transition"
+                        :class="row.status === 'active' ? 'text-amber-700 bg-amber-50 border-amber-200 hover:bg-amber-100' : 'text-emerald-700 bg-emerald-50 border-emerald-200 hover:bg-emerald-100'"
+                    >
+                        {{ row.status === 'active' ? 'Deactivate' : 'Activate' }}
+                    </button>
+                    <button
+                        type="button"
+                        @click="deleteVoucher(row)"
+                        class="text-xs font-medium text-rose-600 hover:text-rose-800 px-2 py-1 rounded border border-rose-200 hover:bg-rose-50 transition"
+                    >
+                        Delete
+                    </button>
+                </div>
             </template>
 
         </DataTable>

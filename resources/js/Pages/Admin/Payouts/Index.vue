@@ -19,7 +19,15 @@ const markPaid = (team) => {
     <AdminLayout>
         <Head title="Payouts" />
 
-        <h1 class="text-xl font-semibold text-[#101114] mb-2">Seller Payouts</h1>
+        <div class="flex items-center justify-between mb-2">
+            <h1 class="text-xl font-semibold text-[#101114]">Seller Payouts</h1>
+            <a
+                :href="route('admin.payouts.export')"
+                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[#E4E4E0] bg-white text-xs font-medium text-[#101114] hover:bg-[#F7F7F5] transition shadow-sm"
+            >
+                <span>📥</span> Export CSV
+            </a>
+        </div>
         <p class="text-sm text-[#8A8B90] mb-6">Amounts owed to each seller from completed, unpaid orders.</p>
 
         <div class="bg-white rounded-xl border border-[#E4E4E0] overflow-hidden">

@@ -63,4 +63,39 @@ class PayoutController extends Controller
 
         return back()->with('success', "Payouts marked as paid for {$team->name}.");
     }
+
+    /** Stream download of seller payouts as CSV ledger report. */
+    public function exportCsv(): \Symfony\Component\HttpFoundation\StreamedResponse
+    {
+        $filename = 'seller_payouts_report_' . date('Y-m-d_His') . '.csv';
+
+        return response()->streamDownload(function () {
+            $handle = fopen('php://output', 'w');
+            fputcsv($handle, ['Shop Name', 'Owner Name', 'Owner Email', 'Order Number', 'Subtotal', 'Commission (Platform Fee)', 'Seller Payout', 'Payout Status', 'Completed Date']);
+
+            OrderShop::where('status', OrderShopStatus::Completed)
+                ->with('team.owner', 'order')
+                ->latest('completed_at')
+                ->chunk(200, function ($shops) use ($handle) {
+                    foreach ($shops as $os) {
+                        fputcsv($handle, [
+                            $os->team?->name ?? 'N/A',
+                            $os->team?->owner?->name ?? 'N/A',
+                            $os->team?->owner?->email ?? 'N/A',
+                            $os->order?->order_number ?? 'N/A',
+                            $os->subtotal,
+                            $os->platform_fee,
+                            $os->seller_payout,
+                            $os->payout_status?->value ?? (string) $os->payout_status,
+                            $os->completed_at?->toDateTimeString() ?? $os->updated_at?->toDateTimeString(),
+                        ]);
+                    }
+                });
+
+            fclose($handle);
+        }, $filename, [
+            'Content-Type' => 'text/csv',
+            'Cache-Control' => 'no-store, no-cache',
+        ]);
+    }
 }

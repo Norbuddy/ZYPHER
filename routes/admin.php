@@ -36,12 +36,16 @@ Route::middleware(['auth', 'verified', 'is.admin'])
         Route::post('/users/{user}/activate', [UserController::class, 'activate'])->name('users.activate');
 
         Route::get('/orders', [OrderShopController::class, 'index'])->name('orders.index');
+        Route::get('/orders/export', [OrderShopController::class, 'exportCsv'])->name('orders.export');
         Route::post('/orders/{orderShop}/refund', [OrderShopController::class, 'refund'])->name('orders.refund');
 
         Route::get('/vouchers', [VoucherController::class, 'index'])->name('vouchers.index');
         Route::post('/vouchers', [VoucherController::class, 'store'])->name('vouchers.store');
+        Route::patch('/vouchers/{voucher}/toggle-status', [VoucherController::class, 'toggleStatus'])->name('vouchers.toggle-status');
+        Route::delete('/vouchers/{voucher}', [VoucherController::class, 'destroy'])->name('vouchers.destroy');
 
         Route::get('/payouts', [PayoutController::class, 'index'])->name('payouts.index');
+        Route::get('/payouts/export', [PayoutController::class, 'exportCsv'])->name('payouts.export');
         Route::post('/payouts/{orderShop}/mark-paid', [PayoutController::class, 'markPaid'])->name('payouts.mark-paid');
         Route::post('/payouts/team/{team}/mark-paid', [PayoutController::class, 'markPaidTeam'])->name('payouts.team.mark-paid');
 
