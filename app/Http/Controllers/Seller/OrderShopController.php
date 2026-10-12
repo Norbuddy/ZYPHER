@@ -77,11 +77,81 @@ class OrderShopController extends Controller
                 ];
             });
 
+        // Load seller's saved addresses from "My Address" for 1-click auto-locate
+        $user = $request->user();
+        $team = $user->currentTeam ?? $user->ownedTeams()->first() ?? $user->teams()->first();
+
+        $addressesQuery = $user->addresses()->get();
+
+        // If user is branch staff and has no personal addresses, check shop owner's saved addresses
+        if ($addressesQuery->isEmpty() && $team && $team->user_id && $team->user_id !== $user->id) {
+            $owner = $team->owner ?? \App\Models\User::find($team->user_id);
+            if ($owner) {
+                $addressesQuery = $owner->addresses()->get();
+            }
+        }
+
+        $sellerAddresses = $addressesQuery->map(function ($addr) {
+            $formatted = collect([
+                $addr->line1,
+                $addr->line2,
+                $addr->city,
+                $addr->province,
+                $addr->postal_code,
+            ])->filter()->join(', ');
+
+            return [
+                'id' => $addr->id,
+                'full_name' => $addr->full_name,
+                'phone' => $addr->phone,
+                'line1' => $addr->line1,
+                'line2' => $addr->line2,
+                'city' => $addr->city,
+                'province' => $addr->province,
+                'postal_code' => $addr->postal_code,
+                'formatted_address' => $formatted,
+                'latitude' => $addr->latitude !== null ? (float) $addr->latitude : null,
+                'longitude' => $addr->longitude !== null ? (float) $addr->longitude : null,
+                'is_default' => (bool) $addr->is_default,
+                'type' => 'my_address',
+            ];
+        });
+
+        // If user is assigned to a branch, also make the branch address available
+        if ($user->branch) {
+            $branch = $user->branch;
+            $branchFormatted = collect([
+                $branch->address,
+                $branch->barangay,
+                $branch->city,
+                $branch->province,
+            ])->filter()->join(', ');
+
+            $sellerAddresses->push([
+                'id' => 'branch_' . $branch->id,
+                'full_name' => $branch->name . ' (Branch)',
+                'phone' => $branch->phone ?? '',
+                'line1' => $branch->address,
+                'line2' => $branch->barangay,
+                'city' => $branch->city,
+                'province' => $branch->province,
+                'postal_code' => '',
+                'formatted_address' => $branchFormatted,
+                'latitude' => $branch->latitude !== null ? (float) $branch->latitude : null,
+                'longitude' => $branch->longitude !== null ? (float) $branch->longitude : null,
+                'is_default' => $sellerAddresses->isEmpty(),
+                'type' => 'branch',
+            ]);
+        }
+
+        $defaultStoreAddress = $sellerAddresses->firstWhere('is_default', true) ?? $sellerAddresses->first();
+
         return Inertia::render(
             'Seller/Orders/Index',
             [
                 'orderShops' => $orderShops,
-                
+                'sellerAddresses' => $sellerAddresses->values(),
+                'defaultStoreAddress' => $defaultStoreAddress,
             ]
         );
     }

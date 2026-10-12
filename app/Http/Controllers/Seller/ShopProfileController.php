@@ -15,10 +15,15 @@ class ShopProfileController extends Controller
     public function update(Request $request): RedirectResponse
     {
         $user = $request->user();
+
+        if ($user->isBranchUser() || $user->branch_id) {
+            abort(403, 'Branch accounts are not authorized to modify the primary shop profile. You may only edit your assigned branch profile.');
+        }
+
         $team = $user->currentTeam ?? $user->ownedTeams()->first() ?? $user->teams()->first();
 
         if (!$team) {
-            return back()->withErrors(['name' => 'Walang nahanap na active store para sa account na ito.']);
+            return back()->withErrors(['name' => 'No active shop found for this account.']);
         }
 
         $data = $request->validate([
@@ -47,6 +52,6 @@ class ShopProfileController extends Controller
 
         $team->save();
 
-        return back()->with('success', 'Nai-save na ang shop profile!');
+        return back()->with('success', 'Shop profile updated successfully.');
     }
 }

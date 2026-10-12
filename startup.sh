@@ -11,8 +11,12 @@ mkdir -p /home/site/wwwroot/storage/framework/sessions
 mkdir -p /home/site/wwwroot/storage/framework/views
 mkdir -p /home/site/wwwroot/storage/framework/cache
 mkdir -p /home/site/wwwroot/storage/app/public/profile-photos
+mkdir -p /home/site/wwwroot/public/videos/reviews
+mkdir -p /home/site/wwwroot/public/images/reviews
 chmod -R 777 /home/site/wwwroot/storage
 chmod -R 777 /home/site/wwwroot/bootstrap/cache
+chmod -R 777 /home/site/wwwroot/public/videos || true
+chmod -R 777 /home/site/wwwroot/public/images || true
 
 cd /home/site/wwwroot
 php artisan storage:link || true

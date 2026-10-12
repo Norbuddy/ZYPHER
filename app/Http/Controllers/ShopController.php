@@ -69,12 +69,40 @@ class ShopController extends Controller
         $totalReviews = Review::whereHas('product', fn ($q) => $q->where('team_id', $shop->id))->count();
         $avgRating = Review::whereHas('product', fn ($q) => $q->where('team_id', $shop->id))->avg('rating') ?: ($shop->rating_avg ?: 5.0);
 
+        // Fetch location address from shop owner's "My Address" or assigned branch
+        $owner = $shop->owner ?? \App\Models\User::find($shop->user_id);
+        $sellerAddress = null;
+        if ($owner) {
+            $sellerAddress = $owner->addresses()->where('is_default', true)->first()
+                ?? $owner->addresses()->latest()->first();
+        }
+
+        $locationAddress = null;
+        if ($sellerAddress) {
+            $locationAddress = collect([
+                $sellerAddress->line1,
+                $sellerAddress->line2,
+                $sellerAddress->city,
+                $sellerAddress->province,
+                $sellerAddress->postal_code,
+            ])->filter()->join(', ');
+        } elseif ($owner?->branch) {
+            $branch = $owner->branch;
+            $locationAddress = collect([
+                $branch->address,
+                $branch->barangay,
+                $branch->city,
+                $branch->province,
+            ])->filter()->join(', ');
+        }
+
         return Inertia::render('Shop/Show', [
             'shop' => [
                 'id' => $shop->id,
                 'name' => $shop->name,
                 'slug' => $shop->slug,
                 'description' => $shop->description ?: 'Independent apparel shop on Zypher',
+                'location_address' => $locationAddress,
                 'logo_path' => $shop->logo_path,
                 'rating_avg' => round((float) $avgRating, 1),
                 'rating_count' => $totalReviews,

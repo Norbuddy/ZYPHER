@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\OrderItem;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\File;
 
 class ReviewController extends Controller
 {
@@ -16,7 +17,7 @@ class ReviewController extends Controller
             'comment' => ['nullable', 'string', 'max:2000'],
             'images' => ['nullable', 'array', 'max:5'],
             'images.*' => ['image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
-            'video' => ['nullable', 'file', 'mimes:mp4,mov,webm', 'max:20480'],
+            'video' => ['nullable', 'file', 'mimes:mp4,mov,webm,quicktime,m4v', 'max:51200'],
         ]);
 
         $orderItem = OrderItem::with('orderShop.order')->findOrFail($data['order_item_id']);
@@ -27,6 +28,7 @@ class ReviewController extends Controller
 
         $imagePaths = [];
         if ($request->hasFile('images')) {
+            File::ensureDirectoryExists(public_path('images/reviews'));
             foreach ($request->file('images') as $file) {
                 $filename = time() . '_' . uniqid() . '_' . $file->getClientOriginalName();
                 $file->move(public_path('images/reviews'), $filename);
@@ -36,6 +38,7 @@ class ReviewController extends Controller
 
         $videoPath = null;
         if ($request->hasFile('video')) {
+            File::ensureDirectoryExists(public_path('videos/reviews'));
             $file = $request->file('video');
             $filename = time() . '_' . uniqid() . '_' . $file->getClientOriginalName();
             $file->move(public_path('videos/reviews'), $filename);

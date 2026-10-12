@@ -133,6 +133,13 @@ const sendMessage = () => {
                         <h1 class="text-2xl sm:text-3xl font-extrabold text-[#101114] tracking-tight">
                             {{ shop.name }}
                         </h1>
+                        <div v-if="shop.location_address" class="flex items-center gap-1.5 text-xs sm:text-sm text-[#5F5E5A] mt-1 font-medium">
+                            <svg class="w-4 h-4 text-[#6D5EF8] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                            </svg>
+                            <span class="truncate">{{ shop.location_address }}</span>
+                        </div>
                         <p class="text-xs sm:text-sm text-[#8A8B90] mt-1">
                             {{ shop.description || 'Independent apparel shop on Zypher' }}
                         </p>
@@ -313,6 +320,16 @@ const sendMessage = () => {
                             <span class="text-[#8A8B90] block">Response Rate</span>
                             <span class="font-bold text-[#101114]">100% within 1 hour</span>
                         </div>
+                    </div>
+                    <div v-if="shop.location_address" class="pt-4 border-t border-[#EAEAE5] text-xs">
+                        <span class="text-[#8A8B90] block mb-1">Store / Pickup Address</span>
+                        <span class="font-medium text-[#101114] flex items-center gap-1.5">
+                            <svg class="w-4 h-4 text-[#6D5EF8] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                            </svg>
+                            {{ shop.location_address }}
+                        </span>
                     </div>
                 </div>
             </div>

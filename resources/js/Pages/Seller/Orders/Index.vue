@@ -12,9 +12,18 @@ const props = defineProps({
         type: Array,
         default: () => [],
     },
+    sellerAddresses: {
+        type: Array,
+        default: () => [],
+    },
+    defaultStoreAddress: {
+        type: Object,
+        default: () => null,
+    },
 });
 
 const shippingDialogFor = ref(null);
+const activeSelectedAddressId = ref(null);
 const selectedOrder = computed(() =>
     props.orderShops.find(
         order => order.id === shippingDialogFor.value
@@ -75,6 +84,27 @@ const markProcessing = (id) => {
     );
 };
 
+const applyStoreAddress = async (addr) => {
+    if (!addr) return;
+    activeSelectedAddressId.value = addr.id;
+    storeGeocodeError.value = '';
+    shipForm.store_address = addr.formatted_address || [addr.line1, addr.city, addr.province].filter(Boolean).join(', ');
+
+    const lat = Number(addr.latitude);
+    const lng = Number(addr.longitude);
+
+    if (Number.isFinite(lat) && Number.isFinite(lng) && lat !== 0 && lng !== 0) {
+        shipForm.store_latitude = lat;
+        shipForm.store_longitude = lng;
+        if (map) {
+            setStoreLocation(lat, lng);
+            map.setView([lat, lng], 14);
+        }
+    } else {
+        await geocodeStoreAddress();
+    }
+};
+
 const openShipDialog = async (id) => {
     shippingDialogFor.value = id;
 
@@ -83,14 +113,33 @@ const openShipDialog = async (id) => {
     shipForm.courier_name = 'Lalamove';
     shipForm.shipping_method = 'Lalamove Delivery';
 
+    // Auto-locate from My Address (default address or first saved address)
+    const initialAddress = props.defaultStoreAddress || (props.sellerAddresses && props.sellerAddresses[0]);
+    if (initialAddress) {
+        activeSelectedAddressId.value = initialAddress.id;
+        shipForm.store_address = initialAddress.formatted_address || [initialAddress.line1, initialAddress.city, initialAddress.province].filter(Boolean).join(', ');
+        const lat = Number(initialAddress.latitude);
+        const lng = Number(initialAddress.longitude);
+        if (Number.isFinite(lat) && Number.isFinite(lng) && lat !== 0 && lng !== 0) {
+            shipForm.store_latitude = lat;
+            shipForm.store_longitude = lng;
+        }
+    }
+
     await nextTick();
 
     initializeMap();
+
+    // If initial address had no coordinates, auto-geocode it
+    if (initialAddress && (!shipForm.store_latitude || !shipForm.store_longitude)) {
+        geocodeStoreAddress();
+    }
 };
 
 const closeShipDialog = () => {
     destroyMap();
     shippingDialogFor.value = null;
+    activeSelectedAddressId.value = null;
     shipForm.reset();
 
     shipForm.courier_name = 'Lalamove';
@@ -144,6 +193,14 @@ const initializeMap = () => {
                 `<strong>Customer</strong><br>${customer.full_name ?? ''}`
             )
             .openPopup();
+    }
+
+    // Auto-place store marker and calculate route if store coordinates exist
+    if (shipForm.store_latitude && shipForm.store_longitude) {
+        setStoreLocation(
+            Number(shipForm.store_latitude),
+            Number(shipForm.store_longitude)
+        );
     }
 
     map.on('click', (event) => {
@@ -613,20 +670,57 @@ const destroyMap = () => {
                 </p>
             </div>
 
-
             <!-- STORE ADDRESS -->
             <div>
-                <label class="block text-xs font-semibold text-[#8A8B90] mb-2">
-                    Store / Pickup Address
-                </label>
+                <div class="flex items-center justify-between mb-2">
+                    <label class="block text-xs font-semibold text-[#8A8B90]">
+                        Store / Pickup Address
+                    </label>
+                    <span v-if="shipForm.store_latitude && shipForm.store_longitude" class="text-[10px] font-medium text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                        ✓ Located on Map
+                    </span>
+                </div>
+
+                <!-- QUICK SELECTOR FROM SELLER'S "MY ADDRESS" -->
+                <div v-if="sellerAddresses && sellerAddresses.length > 0" class="mb-3 space-y-1.5">
+                    <div class="flex items-center justify-between text-[11px] text-[#8A8B90]">
+                        <span class="flex items-center gap-1.5">
+                            <svg class="w-3.5 h-3.5 text-[#6D5EF8]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                            </svg>
+                            <span>Saved in My Address (Click to auto-fill & locate):</span>
+                        </span>
+                        <span class="text-[10px] text-indigo-600 font-medium">1-Click Auto-Locate</span>
+                    </div>
+
+                    <div class="flex flex-wrap gap-2">
+                        <button
+                            v-for="addr in sellerAddresses"
+                            :key="addr.id"
+                            type="button"
+                            @click="applyStoreAddress(addr)"
+                            class="px-3 py-1.5 rounded-lg text-xs font-medium transition flex items-center gap-1.5 border cursor-pointer"
+                            :class="activeSelectedAddressId === addr.id
+                                ? 'bg-[#101114] text-white border-[#101114] shadow-xs'
+                                : 'bg-[#F7F7F5] hover:bg-[#EAEAE5] text-[#101114] border-[#E4E4E0]'"
+                            :title="addr.formatted_address"
+                        >
+                            <span>📍</span>
+                            <span class="font-semibold">{{ addr.type === 'branch' ? addr.full_name : (addr.is_default ? 'Default Address' : (addr.full_name || 'My Address')) }}</span>
+                            <span class="text-[11px] opacity-75">({{ addr.city || addr.line1 }})</span>
+                            <span v-if="addr.latitude && addr.longitude" class="text-[9px] bg-emerald-500/20 text-emerald-400 px-1 py-0.2 rounded font-mono">GPS</span>
+                        </button>
+                    </div>
+                </div>
                 
                 <div class="flex gap-2">
                     <input
-                    v-model="shipForm.store_address"
-                    type="text"
-                    placeholder="Enter your store address..."
-                    class="w-full h-11 px-3 rounded-lg border border-[#E4E4E0] text-sm focus:ring-2 focus:ring-indigo-200 focus:border-indigo-400"
-                        />
+                        v-model="shipForm.store_address"
+                        type="text"
+                        placeholder="Enter your store address..."
+                        class="w-full h-11 px-3 rounded-lg border border-[#E4E4E0] text-sm focus:ring-2 focus:ring-indigo-200 focus:border-indigo-400"
+                    />
                     <button
                         type="button"
                         @click="geocodeStoreAddress"
@@ -637,13 +731,11 @@ const destroyMap = () => {
                     </button>
                 </div>
                 <p v-if="storeGeocodeError" class="text-xs text-red-500 mt-1">{{ storeGeocodeError }}</p>
-                                
 
                 <p class="text-[11px] text-[#8A8B90] mt-1">
-                    Click your exact store location on the map below.
+                    Auto-located from My Address. You can also click the map below to pinpoint or refine your pickup location.
                 </p>
             </div>
-
 
             <!-- CUSTOMER ADDRESS -->
             <div>

@@ -10,6 +10,7 @@ import 'leaflet/dist/leaflet.css';
 const props = defineProps({ order: Object });
 
 const reviewingItem = ref(null);
+const videoError = ref('');
 const reviewForm = useForm({ order_item_id: null, rating: 5, comment: '', images: [], video: null });
 const reviewImagePreviews = ref([]);
 
@@ -20,7 +21,16 @@ const onReviewImagesSelected = (e) => {
 };
 
 const onReviewVideoSelected = (e) => {
-    reviewForm.video = e.target.files[0] ?? null;
+    videoError.value = '';
+    reviewForm.clearErrors('video');
+    const file = e.target.files[0] ?? null;
+    if (file && file.size > 50 * 1024 * 1024) {
+        videoError.value = 'Video file size must be 50MB or smaller.';
+        reviewForm.video = null;
+        e.target.value = '';
+        return;
+    }
+    reviewForm.video = file;
 };
 
 const confirmReceipt = (orderShopId) => {
@@ -29,16 +39,22 @@ const confirmReceipt = (orderShopId) => {
 
 const openReview = (item) => {
     reviewingItem.value = item.id;
+    videoError.value = '';
+    reviewForm.clearErrors();
+    reviewForm.reset('comment', 'images', 'video');
     reviewForm.order_item_id = item.id;
+    reviewImagePreviews.value = [];
 };
 
 const submitReview = () => {
+    if (videoError.value) return;
     reviewForm.post(route('reviews.store'), {
         forceFormData: true,
         preserveScroll: true,
         onSuccess: () => {
             reviewingItem.value = null;
             reviewImagePreviews.value = [];
+            videoError.value = '';
         },
     });
 };
@@ -176,9 +192,13 @@ onBeforeUnmount(() => {
                         <div v-if="reviewImagePreviews.length > 0" class="flex gap-2 mb-2">
                             <img v-for="(src, i) in reviewImagePreviews" :key="i" :src="src" class="w-14 h-14 rounded-lg object-cover border border-[#E4E4E0]" />
                         </div>
+                        <p v-if="reviewForm.errors.images" class="text-xs text-rose-600 mb-2">{{ reviewForm.errors.images }}</p>
 
-                        <label class="block text-xs font-medium text-[#8A8B90] mb-1">Video (optional)</label>
-                        <input type="file" accept="video/*" @change="onReviewVideoSelected" class="text-xs mb-3" />
+                        <label class="block text-xs font-medium text-[#8A8B90] mb-1">Video (optional, max 50MB)</label>
+                        <input type="file" accept="video/*" @change="onReviewVideoSelected" class="text-xs mb-2" />
+                        <p v-if="videoError" class="text-xs text-rose-600 mb-2">{{ videoError }}</p>
+                        <p v-if="reviewForm.errors.video" class="text-xs text-rose-600 mb-2">{{ reviewForm.errors.video }}</p>
+                        <p v-if="reviewForm.errors.comment" class="text-xs text-rose-600 mb-2">{{ reviewForm.errors.comment }}</p>
 
                         <button @click="submitReview" :disabled="reviewForm.processing" class="h-9 px-4 rounded-lg bg-[#101114] text-white text-sm disabled:opacity-40">
                             {{ reviewForm.processing ? 'Submitting…' : 'Submit Review' }}

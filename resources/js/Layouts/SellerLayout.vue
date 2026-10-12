@@ -27,6 +27,7 @@ const shopForm = useForm({
 });
 
 const openEditShopModal = () => {
+    if (isBranchUser.value) return;
     shopForm.clearErrors();
     shopForm.name = team.value?.name || '';
     shopForm.description = team.value?.description || '';
@@ -97,6 +98,7 @@ const triggerLogoInput = () => {
 };
 
 const saveShopProfile = () => {
+    if (isBranchUser.value) return;
     shopForm.post(route('seller.shop.update'), {
         preserveScroll: true,
         forceFormData: true,
@@ -194,8 +196,9 @@ router.on('navigate', () => {
                 </span>
             </div>
 
-            <!-- SHOP NAME CHIP (CLICKABLE TO EDIT STORE PROFILE) -->
+            <!-- SHOP NAME CHIP (CLICKABLE TO EDIT STORE PROFILE FOR OWNER ONLY) -->
             <button
+                v-if="!isBranchUser"
                 type="button"
                 @click="openEditShopModal"
                 class="w-full text-left px-3 py-2.5 rounded-xl bg-white/5 border border-white/5 mb-6 hover:bg-white/10 hover:border-white/20 transition-all group select-none cursor-pointer"
@@ -221,6 +224,33 @@ router.on('navigate', () => {
                     </p>
                 </div>
             </button>
+
+            <!-- NON-EDITABLE CHIP FOR BRANCH USERS -->
+            <div
+                v-else
+                class="w-full text-left px-3 py-2.5 rounded-xl bg-white/5 border border-white/5 mb-6 select-none opacity-90"
+                title="Shop profile can only be modified by the primary merchant owner"
+            >
+                <div class="flex items-center justify-between">
+                    <p class="text-[10px] uppercase tracking-wider text-white/40 font-medium">Store</p>
+                    <span class="text-[9px] text-white/40 bg-white/5 px-1.5 py-0.5 rounded border border-white/10">
+                        Managed by Owner
+                    </span>
+                </div>
+                <div class="flex items-center gap-2 mt-1.5">
+                    <div class="w-6 h-6 rounded-full bg-white/20 text-white flex items-center justify-center text-[10px] font-bold overflow-hidden shrink-0">
+                        <img
+                            v-if="team?.logo_path"
+                            :src="(team.logo_path.startsWith('images/') || team.logo_path.startsWith('http') ? (team.logo_path.startsWith('http') ? team.logo_path : '/' + team.logo_path) : '/storage/' + team.logo_path)"
+                            class="w-full h-full object-cover"
+                        />
+                        <span v-else>{{ team?.name?.charAt(0) || 'S' }}</span>
+                    </div>
+                    <p class="text-xs font-semibold text-white truncate flex-1">
+                        {{ team?.name || 'Main Shop' }}
+                    </p>
+                </div>
+            </div>
 
             <!-- NAVIGATION -->
             <nav class="space-y-1 flex-1 overflow-y-auto pr-1 scrollbar-none">
@@ -427,6 +457,14 @@ router.on('navigate', () => {
                 </nav>
 
                 <div class="pt-4 mt-auto border-t border-white/10 space-y-2">
+                    <Link
+                        v-if="isBranchUser && !isCashier"
+                        :href="route('branch.profile')"
+                        @click="sidebarOpen = false"
+                        class="block px-3 py-2 rounded-xl text-xs text-white/80 bg-white/10 hover:bg-white/15 hover:text-white font-medium border border-white/10"
+                    >
+                        🏢 Edit Branch Profile
+                    </Link>
                     <Link
                         v-if="!isBranchUser"
                         :href="route('home')"
